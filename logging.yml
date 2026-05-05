@@ -1,0 +1,19 @@
+levels:
+  - name: ERROR
+    color: '<light-red>'
+  - name: CRITICAL
+    color: '<red>'
+
+handlers:
+  # stdout: DEBUG, INFO, WARNING only
+  - sink: ext://sys.stdout
+    level: 'DEBUG'
+    filter: ext://__main__._stdout_filter
+    format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
+    colorize: true
+
+  # stderr: ERROR and CRITICAL only
+  - sink: ext://sys.stderr
+    level: 'ERROR'
+    format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
+    colorize: true
