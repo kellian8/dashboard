@@ -8,13 +8,15 @@ Desktop dashboard built with PyQt6 and QML, providing a native-feeling UI panel 
 
 ## Requirements
 
-- Python 3.x
-- PyQt6
+- Python 3.14
+- PyQt6 6.11
+- conda
 
 ## Setup
 
 ```bash
-pip install PyQt6
+conda create --name dashboard --file spec-file.txt
+conda activate dashboard
 ```
 
 ## Running
