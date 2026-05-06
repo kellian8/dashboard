@@ -3,6 +3,10 @@
 import sys
 from os import path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from loguru import logger
 from loguru_config import LoguruConfig
 from PyQt6.QtWidgets import QApplication
@@ -34,4 +38,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from dash.services import InvestmentsService
+
+    investments = InvestmentsService()
+    investments.getSummary()
+    #    main()
