@@ -1,3 +1,3 @@
-from dash.services.investments import InvestmentsService
+from dash.services.investmentsService import InvestmentsService
 
 __all__ = ["InvestmentsService"]

@@ -1,4 +1,5 @@
 import os
+from typing import Dict, List
 
 from loguru import logger
 from PyQt6.QtCore import Qt, QUrl

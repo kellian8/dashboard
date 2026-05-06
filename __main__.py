@@ -13,6 +13,8 @@ from PyQt6.QtWidgets import QApplication
 
 from dash.gui.mainWindow import MainWindow
 
+from ..scheduling.Observer import BridgeDataObserver
+
 
 def _stdout_filter(record):
     """Allow only DEBUG, INFO, and WARNING through to stdout."""
@@ -33,13 +35,13 @@ def main():
     window = MainWindow()
     window.show()
 
+    # TODO: Start the scheduler, register observers and give tasks
+    # Bridge data observer requires bridge update callbacks
+    # Then on app.exit() shutdown scheduler
+
     # Ensure system can exit application
     sys.exit(app.exec())
 
 
 if __name__ == "__main__":
-    from dash.services import InvestmentsService
-
-    investments = InvestmentsService()
-    investments.getSummary()
-    #    main()
+    main()
