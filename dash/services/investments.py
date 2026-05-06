@@ -1,4 +1,5 @@
 from os import environ
+from typing import Dict, List
 
 import requests
 from loguru import logger
@@ -8,7 +9,7 @@ from ..config import _ENDPOINTS, BASE_URL
 
 
 class InvestmentsService:
-    def getSummary(self):
+    def getSummary(self) -> List[Dict]:
         # Build the full endpoint URL for the account summary
         url = f"{BASE_URL}{_ENDPOINTS.summary}"
         _username = environ.get('TRADING212_KEY_ID')
@@ -32,7 +33,6 @@ class InvestmentsService:
 
             if res.ok:
                 data = res.json()
-                logger.debug(f"Raw response data: {data}")
 
                 # Extract the nested investments object; default to empty dict if missing
                 investments = data.get("investments", {})
@@ -49,6 +49,7 @@ class InvestmentsService:
                 ]
 
                 logger.debug(f"Parsed summary result: {result}")
+                return result
             else:
                 logger.warning(f"Request returned non-OK status: {res.status_code} - {res.text}")
 
