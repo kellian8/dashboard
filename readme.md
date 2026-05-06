@@ -15,7 +15,7 @@ Desktop dashboard built with PyQt6 and QML, providing a native-feeling UI panel 
 ## Setup
 
 ```bash
-conda create --name dashboard --file spec-file.txt
+conda env create -f environment.yml
 conda activate dashboard
 ```
 
