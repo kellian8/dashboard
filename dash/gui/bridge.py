@@ -1,38 +1,40 @@
-from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
+from PyQt6.QtCore import QObject, Qt, pyqtProperty, pyqtSignal, pyqtSlot
 
 
 class Bridge(QObject):
     dataChanged = pyqtSignal()
+    summary_updated = pyqtSignal(list)
 
     def __init__(self, window=None):
         super().__init__()
         self._window = window
-        self._label = "Investments"
-        self._fields = [
-            ("Total Inv.", "$10,000"),
-            ("Returns", "$1,500"),
-            ("Growth", "15%"),
-            ("Dividends", "$200"),
-            ("Net Profit", "$1,300"),
-            ("Loss", "$0"),
-            ("Tax", "$300"),
-            ("Balance", "$8,700"),
+        self._investment_summary_label = "Investments"
+        self._investment_summary_fields = [
+            ("Current Value", "-"),
+            ("Realized P/L", "-"),
+            ("Total Cost", "-"),
+            ("Unrealized P/L", "-"),
+            ("Total Value", "-"),
+            ("Free Cash", "-"),
         ]
 
+        self.summary_updated.connect(self.update_investment_fields, Qt.ConnectionType.QueuedConnection)
+
     @pyqtProperty(str, notify=dataChanged)
-    def label(self):
-        return self._label
+    def investment_summary_label(self):
+        return self._investment_summary_label
 
     def update_label(self, value):
-        self._label = value
+        self._investment_summary_label = value
         self.dataChanged.emit()
 
     @pyqtProperty('QVariantList', notify=dataChanged)
-    def fields(self):
-        return [{"key": k, "value": v} for k, v in self._fields]
+    def investment_summary_fields(self):
+        return [{"key": k, "value": v} for k, v in self._investment_summary_fields]
 
-    def update_fields(self, value):
-        self._fields = value
+    @pyqtSlot(list)
+    def update_investment_fields(self, value):
+        self._investment_summary_fields = value
         self.dataChanged.emit()
 
     @pyqtSlot(int, int)

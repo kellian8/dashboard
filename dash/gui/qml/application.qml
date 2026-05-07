@@ -3,8 +3,8 @@ import QtQuick.Controls 2.15
 
 Item {
     id: root
-    width: 500
-    height: 160
+    width: 521
+    height: 140
 
     Rectangle {
         anchors.fill: parent
@@ -31,7 +31,7 @@ Item {
                 spacing: 15
 
                 Text {
-                    text: bridge ? bridge.label : ""
+                    text: bridge ? bridge.investment_summary_label : ""
                     color: "white"
                     font.pixelSize: 16
                     font.weight: Font.Bold
@@ -40,16 +40,16 @@ Item {
                 Row {
                     spacing: 60
 
-                    PortfolioSummaryKVColumn { fields: bridge ? bridge.fields : []; offset: 0 }
+                    PortfolioSummaryKVColumn { fields: bridge ? bridge.investment_summary_fields : []; offset: 0 }
 
                     Rectangle {
                         width: 1
-                        height: 84
+                        height: 65
                         anchors.verticalCenter: parent.verticalCenter
                         color: "#666666"
                     }
 
-                    PortfolioSummaryKVColumn { fields: bridge ? bridge.fields : []; offset: 4 }
+                    PortfolioSummaryKVColumn { fields: bridge ? bridge.investment_summary_fields: []; offset: 3 }
                 }
             }
         }

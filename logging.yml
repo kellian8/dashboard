@@ -11,9 +11,11 @@ handlers:
     filter: ext://__main__._stdout_filter
     format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
     colorize: true
+    enqueue: true
 
   # stderr: ERROR and CRITICAL only
   - sink: ext://sys.stderr
     level: 'ERROR'
     format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
     colorize: true
+    enqueue: true

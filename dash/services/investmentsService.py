@@ -1,60 +1,53 @@
 from os import environ
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 import requests
 from loguru import logger
 from requests.exceptions import RequestException
 
-from ..config import _ENDPOINTS, BASE_URL
+from ..config import BASE_URL, ENDPOINTS
 
 
 class InvestmentsService:
-    def getSummary(self) -> List[Dict]:
+    def get_summary(self) -> Optional[Dict]:
         # Build the full endpoint URL for the account summary
-        url = f"{BASE_URL}{_ENDPOINTS.summary}"
+        url = f"{BASE_URL}{ENDPOINTS.summary}"
         _username = environ.get('TRADING212_KEY_ID')
+        _password = environ.get('TRADING212_AUTH_KEY')
 
         # Guard against missing API key before making any network calls
-        if _username is None:
-            logger.error("TRADING212_KEY_ID environment variable is not set — cannot fetch account summary")
-            return
-
-        logger.info(f"Fetching account summary from {url}")
+        if _username is None or _password is None:
+            raise RuntimeError(
+                "investment API credentials are required. Please check they are loaded from environment correctly"
+            )
 
         try:
+            logger.info(f"Fetching account summary from {url}")
             res = requests.get(
                 url,
                 headers={"Authorization": _username},
-                auth=(_username, environ.get('TRADING212_AUTH_KEY')),
+                auth=(_username, _password),
                 timeout=5,
             )
 
             logger.debug(f"Response status: {res.status_code}")
 
             if res.ok:
-                data = res.json()
-
-                # Extract the nested investments object; default to empty dict if missing
-                investments = data.get("investments", {})
-
-                # Flatten the relevant properties into a list of key/value dicts.
-                # Excludes: cash, id, currency
-                result = [
-                    {"key": "currentValue", "value": investments.get("currentValue")},
-                    {"key": "realizedProfitLoss", "value": investments.get("realizedProfitLoss")},
-                    {"key": "totalCost", "value": investments.get("totalCost")},
-                    {"key": "unrealizedProfitLoss", "value": investments.get("unrealizedProfitLoss")},
-                    # totalValue lives at the top level of the response
-                    {"key": "totalValue", "value": data.get("totalValue")},
-                ]
-
-                logger.debug(f"Parsed summary result: {result}")
-                return result
+                logger.success("Account summary data fetched successfully!")
+                data: Dict = res.json()
+                return data
             else:
                 logger.warning(f"Request returned non-OK status: {res.status_code} - {res.text}")
 
         except RequestException as e:
             logger.error("An error occurred while fetching trading account summary")
             logger.error(e)
-        else:
-            logger.success("Account summary data fetched successfully!")
+
+        return None
+
+    def format_price(self, value: Union[int, float, None]) -> str:
+        if value is None:
+            return "-"
+        if abs(value) >= 1000:
+            return f"£ {value:,.2f}"
+        return f"£ {value:.2f}"

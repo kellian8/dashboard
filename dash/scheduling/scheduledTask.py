@@ -2,31 +2,33 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, PrivateAttr
+
+from .task import Task
+from .schedulingStrategy import SchedulingStrategy
+from .taskStatus import TaskStatus
 
 
 class ScheduledTask(BaseModel):
-    _id: str = str(uuid.uuid4())
-    _task: Task
-    _strategy: SchedulingStrategy
-    _sequenceNumber: int
-    _last_execution_time: datetime = None
-    _status: TaskStatus = TaskStatus.SCHEDULED
+    # Public constructor fields
+    task: Task
+    strategy: SchedulingStrategy
+    sequence_number: int
 
-    @model_validator(mode='after')
-    def set_next_executed_time(self):
+    # Private per-instance state
+    _id: str = PrivateAttr(default_factory=lambda: str(uuid.uuid4()))
+    _last_execution_time: Optional[datetime] = PrivateAttr(default=None)
+    _status: TaskStatus = PrivateAttr(default=TaskStatus.SCHEDULED)
+    _next_execution_time: Optional[datetime] = PrivateAttr(default=None)
+
+    def model_post_init(self, __context) -> None:
         # Ask the strategy for the initial execution time.
         # Passing None signals "this task has never run before."
-        self._next_execution_time: Optional[datetime] = strategy.get_next_execution_time(None)
-        return self
+        self._next_execution_time = self.strategy.get_next_execution_time(None)
 
     @property
     def id(self) -> str:
         return self._id
-
-    @property
-    def task(self) -> Task:
-        return self._task
 
     @property
     def next_execution_time(self) -> Optional[datetime]:
@@ -41,13 +43,13 @@ class ScheduledTask(BaseModel):
         self._status = value
 
     def has_more_executions(self):
-        return self.strategy.get_next_executed_time(self._last_execution_time) is not None
+        return self.strategy.get_next_execution_time(self._last_execution_time) is not None
 
     # Called after execution completes. Records the actual finish time
     # then asks the strategy for the next run.
-    def update_for_next_execution():
+    def update_for_next_execution(self):
         self._last_execution_time = datetime.now()
-        next_time = self._strategy.get_next_executed_time(self._last_execution_time)
+        next_time = self.strategy.get_next_execution_time(self._last_execution_time)
         self._next_execution_time = next_time
 
     def __lt__(self, other: 'ScheduledTask') -> bool:
@@ -64,7 +66,7 @@ class ScheduledTask(BaseModel):
             return self._next_execution_time < other._next_execution_time
 
         # Tiebreaker: lower sequence number first (FIFO for same-time tasks)
-        return self._sequence_number < other._sequence_number
+        return self.sequence_number < other.sequence_number
 
     def __repr__(self) -> str:
-        return f"ScheduledTask[{self._task.get_name()}, next={self._next_execution_time}, status={self._status}]"
+        return f"ScheduledTask[{self.task.get_name()}, next={self._next_execution_time}, status={self._status}]"

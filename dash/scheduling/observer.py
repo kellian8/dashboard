@@ -1,8 +1,12 @@
 import threading
 from abc import ABC, abstractmethod
+from typing import Callable, Optional
 
 from loguru import logger
 from pydantic import BaseModel
+from PyQt6.QtCore import pyqtBoundSignal
+
+from ..config import TaskConfigs
 
 
 class TaskExecutionObserver(ABC, BaseModel):
@@ -35,23 +39,26 @@ class LoggingObserver(TaskExecutionObserver):
 
 
 class BridgeDataObserver(TaskExecutionObserver):
-    _updateInvestmentsUI: function
-    _alertStaleData: function
+    updateInvestmentsQSignal: pyqtBoundSignal = None
+    alertStaleData: Optional[pyqtBoundSignal] = None
+
+    model_config = {"arbitrary_types_allowed": True}
 
     def on_task_started(self, task: 'ScheduledTask') -> None:
         pass
 
-    def on_task_completed(self, task: 'ScheduledTask', data: Dict[str, Any]) -> None:
-        # Checking the data structure is compatible with qml enumeration
-        # passing the date to bridge through callback depending on task name
-        if isinstance(data, Dict):
-            thread_name = threading.current_thread().name
-            if 'investments_summary_getter' in thread_name:
-                self._updateInvestmentsUI(data)
-        else:
-            TypeError("Date for QML bridge insertion must be of type List<Dict>")
+    def on_task_completed(self, task: 'ScheduledTask') -> None:
+        # Route to the correct UI update callback based on the task's name
+        if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
+            if self.updateInvestmentsQSignal is not None:
+                self.updateInvestmentsQSignal.emit(task.task.data)
+            else:
+                logger.warning("BridgeDataObserver: _updateInvestmentsQSignal callback is not set")
 
     def on_task_failed(self, task: 'ScheduledTask', exception: Exception) -> None:
-        # Prompt bridge to show stale data warning if tasks fail
-        if 'investments_summary_getter' in thread_name:
-            self._warnStaleData()
+        # Prompt bridge to show stale data warning if the task fails
+        if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
+            if self.alertStaleData is not None:
+                self.alertStaleData()
+            else:
+                logger.warning("BridgeDataObserver: _alertStaleData callback is not set")
