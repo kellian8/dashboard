@@ -5,10 +5,6 @@ from datetime import time
 from os import path
 from typing import List
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from loguru import logger
 from loguru_config import LoguruConfig
 from PyQt6.QtWidgets import QApplication
@@ -24,6 +20,11 @@ from dash.scheduling import (
 )
 from dash.services import InvestmentsService
 from dash.services.schedulingService import TaskSchedulerService
+
+if os.environ.get("ENV") == "development":
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
 
 def _stdout_filter(record):
