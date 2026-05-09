@@ -1,6 +1,7 @@
 name: C:\Users\Nazareth\Desktop\Projects\desktopWidgets\dashboard\env
 channels:
   - defaults
+  - conda-forge
 dependencies:
   - requests
   - pydantic
@@ -10,4 +11,3 @@ dependencies:
   - pyaml
   - pip:
     - python-dotenv
-prefix: C:\Users\Nazareth\Desktop\Projects\desktopWidgets\dashboard\env
