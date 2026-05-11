@@ -41,7 +41,7 @@ class InvestmentsService:
 
         except RequestException as e:
             logger.error("An error occurred while fetching trading account summary")
-            logger.error(e)
+            raise e
 
         return None
 

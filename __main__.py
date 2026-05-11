@@ -1,18 +1,22 @@
 """Initiate the application instance and load main window"""
 
-import sys
+import signal
+import threading
 from datetime import time
-from os import path
+from os import environ, path
 from typing import List
 
 from loguru import logger
 from loguru_config import LoguruConfig
-from PyQt6.QtWidgets import QApplication
+
+if environ.get("ENV") == "development":
+    from dotenv import load_dotenv
+
+    load_dotenv()
 
 from dash.config import TaskConfigs
-from dash.gui.mainWindow import MainWindow
 from dash.scheduling import (
-    BridgeDataObserver,
+    DataObserver,
     FetchSummaryTask,
     LoggingObserver,
     RecurringTimeSchedulingStrategy,
@@ -20,11 +24,6 @@ from dash.scheduling import (
 )
 from dash.services import InvestmentsService
 from dash.services.schedulingService import TaskSchedulerService
-
-if os.environ.get("ENV") == "development":
-    from dotenv import load_dotenv
-
-    load_dotenv()
 
 
 def _stdout_filter(record):
@@ -38,6 +37,7 @@ def main():
     logger.info("Application logger configured successfully and running")
     logger.info("Starting application!")
 
+    logger.debug("base_url: {}", environ.get("TRADING212_BASE_URL"))
     scheduler: TaskSchedulerService = TaskSchedulerService.getInstance()
     scheduler.initialize(worker_count=2)
 
@@ -56,24 +56,23 @@ def main():
             TaskConfigs["FETCH_SUMMARY"].name,
         )
 
-    # Set up main PyQt6 application context and starting MainWindow
-    # component
-    logger.info("Setting up main PyQt6 application with sys.argv")
-    app = QApplication(sys.argv)
-    logger.info("Loading MainWindow (QWidget)")
-    window = MainWindow()
-
     # registering observers after QApplication setup so BridgeDataObserver
     # has access to the the active main window Bridge
     scheduler.addObserver(LoggingObserver())
-    bridgeDataObserver = BridgeDataObserver(updateInvestmentsQSignal=window.bridge.summary_updated)
-    scheduler.addObserver(bridgeDataObserver)
+    scheduler.addObserver(DataObserver())
 
-    window.show()
+    shutdown_event = threading.Event()
 
-    # Ensure system can exit application
-    app.aboutToQuit.connect(scheduler.shutdown)
-    sys.exit(app.exec())
+    def _handle_application_shutdown(signum, frame):
+        logger.info("Received signal {}, shutting down...", signum)
+        shutdown_event.set()
+
+    signal.signal(signal.SIGTERM, _handle_application_shutdown)
+    signal.signal(signal.SIGINT, _handle_application_shutdown)
+
+    shutdown_event.wait()
+    scheduler.shutdown()
+    logger.info("Application stopped")
 
 
 if __name__ == "__main__":

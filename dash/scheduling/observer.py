@@ -1,12 +1,14 @@
+import json
 import threading
 from abc import ABC, abstractmethod
-from typing import Callable, Optional
+from datetime import datetime
+from os import path
 
 from loguru import logger
 from pydantic import BaseModel
-from PyQt6.QtCore import pyqtBoundSignal
 
-from ..config import TaskConfigs
+from ..config import FILES, TaskConfigs
+from .taskStatus import TaskStatus
 
 
 class TaskExecutionObserver(ABC, BaseModel):
@@ -38,9 +40,11 @@ class LoggingObserver(TaskExecutionObserver):
         logger.exception(exception)
 
 
-class BridgeDataObserver(TaskExecutionObserver):
-    updateInvestmentsQSignal: pyqtBoundSignal = None
-    alertStaleData: Optional[pyqtBoundSignal] = None
+class DataObserver(TaskExecutionObserver):
+    store_path: str = path.join(FILES.temp_dir, 'store.json')
+    _task_not_failed_or_cancelled = lambda s, t: (
+        True if t.status != TaskStatus.CANCELLED or t.status != TaskStatus.FAILED else False
+    )
 
     model_config = {"arbitrary_types_allowed": True}
 
@@ -50,15 +54,20 @@ class BridgeDataObserver(TaskExecutionObserver):
     def on_task_completed(self, task: 'ScheduledTask') -> None:
         # Route to the correct UI update callback based on the task's name
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
-            if self.updateInvestmentsQSignal is not None:
-                self.updateInvestmentsQSignal.emit(task.task.data)
+            investment_data: List[tuple] = task.task.data
+            logger.debug("Investment data:\n", investment_data)
+            if self._task_not_failed_or_cancelled(task):
+                store = dict()
+                store["investment_fields"] = investment_data
+                store["timestamp"] = datetime.isoformat(task._next_execution_time)
+
+                with open(self.store_path, 'w+') as sf:
+                    json.dump(store, sf)
+
             else:
-                logger.warning("BridgeDataObserver: _updateInvestmentsQSignal callback is not set")
+                logger.warning("Task {} result was not saved as execution failed or cancelled", task.task.status)
 
     def on_task_failed(self, task: 'ScheduledTask', exception: Exception) -> None:
         # Prompt bridge to show stale data warning if the task fails
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
-            if self.alertStaleData is not None:
-                self.alertStaleData()
-            else:
-                logger.warning("BridgeDataObserver: _alertStaleData callback is not set")
+            logger.info("unable to fetch investment summary, current store state unchanged")

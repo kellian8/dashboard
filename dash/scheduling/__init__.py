@@ -1,5 +1,5 @@
 from dash.scheduling.observer import (
-    BridgeDataObserver,
+    DataObserver,
     LoggingObserver,
     TaskExecutionObserver,
 )
@@ -16,7 +16,7 @@ from dash.scheduling.taskStatus import TaskStatus
 __all__ = [
     "TaskExecutionObserver",
     "LoggingObserver",
-    "BridgeDataObserver",
+    "DataObserver",
     "ScheduledTask",
     "Task",
     "SchedulingStrategy",

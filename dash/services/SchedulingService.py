@@ -142,6 +142,11 @@ class TaskSchedulerService:
             scheduled_task.status = TaskStatus.SCHEDULED
             with self._condition:
                 heapq.heappush(self._task_queue, scheduled_task)
+                logger.info(
+                    "Task '{}' rescheduled for {}",
+                    scheduled_task.task.get_name(),
+                    scheduled_task.next_execution_time.strftime("%d %b %Y at %H:%M:%S"),
+                )
                 # Wake workers so they re-evaluate the new queue head
                 self._condition.notify_all()
 
