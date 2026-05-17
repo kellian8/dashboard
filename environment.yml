@@ -1,13 +1,13 @@
-name: /Users/ndi103/projects/windows-dashboard/env
+name: C:\Users\Nazareth\Desktop\Projects\desktopWidgets\dashboard\env
 channels:
   - defaults
+  - conda-forge
 dependencies:
-  - pip
-  - loguru
-  - pyaml
-  - pydantic
   - requests
+  - pydantic
   - pyqt6
+  - loguru
   - loguru-config
-  - cherrypy
-prefix: /Users/ndi103/projects/windows-dashboard/env
+  - pyaml
+  - pip:
+    - python-dotenv
