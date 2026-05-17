@@ -6,6 +6,7 @@ from datetime import time
 from os import environ, path
 from typing import List
 
+import cherrypy
 from loguru import logger
 from loguru_config import LoguruConfig
 
@@ -22,6 +23,7 @@ from dash.scheduling import (
     RecurringTimeSchedulingStrategy,
     Task,
 )
+from dash.server import run_server
 from dash.services import InvestmentsService
 from dash.services.schedulingService import TaskSchedulerService
 
@@ -33,7 +35,7 @@ def _stdout_filter(record):
 
 def main():
     # Load logging configuration from file
-    LoguruConfig.load(path.join(path.dirname(__file__), 'logging.yml'))
+    LoguruConfig.load(path.join(path.dirname(__file__), "logging.yml"))
     logger.info("Application logger configured successfully and running")
     logger.info("Starting application!")
 
@@ -47,9 +49,15 @@ def main():
 
     if len(scheduled_fetch_times) > 0:
         for t in scheduled_fetch_times:
-            investment_summary_task: Task = FetchSummaryTask(investmentsService=investmentsService)
-            investment_summary_task_schedule: SchedulingStrategy = RecurringTimeSchedulingStrategy(time=t)
-            scheduler.schedule(task=investment_summary_task, strategy=investment_summary_task_schedule)
+            investment_summary_task: Task = FetchSummaryTask(
+                investmentsService=investmentsService
+            )
+            investment_summary_task_schedule: SchedulingStrategy = (
+                RecurringTimeSchedulingStrategy(time=t)
+            )
+            scheduler.schedule(
+                task=investment_summary_task, strategy=investment_summary_task_schedule
+            )
     else:
         logger.warn(
             "Unable to schedule {} task. Add schedule times to task config",
@@ -61,16 +69,25 @@ def main():
     scheduler.addObserver(LoggingObserver())
     scheduler.addObserver(DataObserver())
 
+    server_thread = threading.Thread(
+        target=run_server, daemon=True, name="main-server-thread"
+    )
+    server_thread.start()
+
     shutdown_event = threading.Event()
 
     def _handle_application_shutdown(signum, frame):
+        # Allows the graceful application exit on all shutdown signals.
+        # Cherrypy bus process shutdown initiated first through its signal handler.
+        # then main proc shutdown event triggered.
         logger.info("Received signal {}, shutting down...", signum)
+        cherrypy.engine.exit()
         shutdown_event.set()
 
     signal.signal(signal.SIGTERM, _handle_application_shutdown)
     signal.signal(signal.SIGINT, _handle_application_shutdown)
 
-    shutdown_event.wait()
+    shutdown_event.wait()  # Shutdown event waits until defined signals
     scheduler.shutdown()
     logger.info("Application stopped")
 
