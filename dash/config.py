@@ -24,7 +24,7 @@ class FetchSummaryTaskConfig(BaseModel):
 
     name: str = "fetch_investment_summary"
     scheduled_times: List[time] = [
-        time(hour=1, minute=41, second=0),
+        time(hour=22, minute=20, second=50),
         # time(hour=8, minute=10, second=40),
     ]
 
