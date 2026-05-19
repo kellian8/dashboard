@@ -13,7 +13,6 @@ envs/
 
 # Temp
 dash/temp/
-dash/temp/store.json
 
 # Environment
 .env
