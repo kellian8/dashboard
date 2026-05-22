@@ -19,12 +19,19 @@ from dash.scheduling import (
     DataObserver,
     FetchSummaryTask,
     LoggingObserver,
+    OneTimeSchedulingStrategy,
+    RecurringSchedulingStrategy,
     RecurringTimeSchedulingStrategy,
-    Task,
 )
 from dash.server import run_server
 from dash.services import InvestmentsService
 from dash.services.schedulingService import TaskSchedulerService
+
+_STRATEGY_BUILDERS = {
+    "recurring_time": lambda s: RecurringTimeSchedulingStrategy(time=s.time),
+    "interval": lambda s: RecurringSchedulingStrategy(interval=s.interval),
+    "one_time": lambda s: OneTimeSchedulingStrategy(execution_time=s.execution_time),
+}
 
 
 def _stdout_filter(record):
@@ -43,17 +50,17 @@ def main():
 
     investmentsService = InvestmentsService()
 
-    scheduled_fetch_times: List[time] = TaskConfigs["FETCH_SUMMARY"].scheduled_times
-
-    if len(scheduled_fetch_times) > 0:
-        for t in scheduled_fetch_times:
-            investment_summary_task: Task = FetchSummaryTask(investmentsService=investmentsService)
-            investment_summary_task_schedule: SchedulingStrategy = RecurringTimeSchedulingStrategy(time=t)
-            scheduler.schedule(task=investment_summary_task, strategy=investment_summary_task_schedule)
+    config = TaskConfigs["FETCH_SUMMARY"]
+    if config.schedules:
+        for sched in config.schedules:
+            scheduler.schedule(
+                task=FetchSummaryTask(investmentsService=investmentsService),
+                strategy=_STRATEGY_BUILDERS[sched.type](sched),
+            )
     else:
-        logger.warn(
-            "Unable to schedule {} task. Add schedule times to task config",
-            TaskConfigs["FETCH_SUMMARY"].name,
+        logger.warning(
+            "No schedules configured for task '{}'. Add entries to TaskConfigs.",
+            config.name,
         )
 
     # registering observers after QApplication setup so BridgeDataObserver
