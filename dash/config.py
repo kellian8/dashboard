@@ -46,28 +46,21 @@ class Endpoints(BaseModel):
     summary: str = "/equity/account/summary"
 
 
-class Files(BaseModel):
-    model_config = {"frozen": True}
-
-    source_root_dir: str = path.dirname(__file__)
-    temp_dir: str = path.join(path.abspath(path.dirname(__file__)), "temp")
-
-
 # TASK CONFIGURATIONS
 TaskConfigs = {
     "FETCH_SUMMARY": _FrozenNamespace(
         name="fetch_investment_summary",
         schedules=[
-            # _FrozenNamespace(type="recurring_time", time=time(hour=22, minute=2, second=30)),
+            #            _FrozenNamespace(type="recurring_time", time=time(hour=23, minute=24, second=50)),
             # _FrozenNamespace(type="recurring_time", time=time(hour=8, minute=10, second=40)),
-            _TaskConfigSchedule(type="interval", interval=timedelta(seconds=30)),
+            _TaskConfigSchedule(type="interval", interval=timedelta(seconds=10)),
             # _FrozenNamespace(type="one_time", execution_time=datetime(2026, 6, 1, 22, 0)),
         ],
     )
 }
 
 
-FILES = Files()
+ROOT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 
 BASE_URL = environ.get('TRADING212_BASE_URL')
 

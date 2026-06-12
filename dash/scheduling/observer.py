@@ -1,14 +1,10 @@
-import json
 import threading
 from abc import ABC, abstractmethod
-from datetime import datetime
-from os import path
 
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
 
-from ..config import FILES, TaskConfigs
-from .taskStatus import TaskStatus
+from ..config import TaskConfigs
 
 
 class TaskExecutionObserver(ABC, BaseModel):
@@ -41,12 +37,16 @@ class LoggingObserver(TaskExecutionObserver):
 
 
 class DataObserver(TaskExecutionObserver):
-    store_path: str = path.join(FILES.temp_dir, 'store.json')
-    _task_not_failed_or_cancelled = lambda s, t: (
-        True if t.status != TaskStatus.CANCELLED or t.status != TaskStatus.FAILED else False
-    )
-
+    # TODO: create store Object with method to persist result (like 'self.store.update({investment_fields: <some date>})')
+    _store: StoreLike = PrivateAttr()
     model_config = {"arbitrary_types_allowed": True}
+
+    def __init__(self, store: StoreLike):
+        # duck typing to validate store service that then add instatiate it as store property
+        if hasattr(store, 'update') and hasattr(store, 'get_from_table'):
+            self._store = store
+        else:
+            raise TypeError("Data observer couldn't be instantiated. Must provide a valid store client")
 
     def on_task_started(self, task: 'ScheduledTask') -> None:
         pass
@@ -55,17 +55,7 @@ class DataObserver(TaskExecutionObserver):
         # Route to the correct UI update callback based on the task's name
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
             investment_data: List[tuple] = task.task.data
-            logger.debug("Investment data:\n", investment_data)
-            if self._task_not_failed_or_cancelled(task):
-                store = dict()
-                store["investment_fields"] = investment_data
-                store["timestamp"] = datetime.isoformat(task._next_execution_time)
-
-                with open(self.store_path, 'w+') as sf:
-                    json.dump(store, sf)
-
-            else:
-                logger.warning("Task {} result was not saved as execution failed or cancelled", task.task.status)
+            self._store.update(investment_data, 'investments')
 
     def on_task_failed(self, task: 'ScheduledTask', exception: Exception) -> None:
         # Prompt bridge to show stale data warning if the task fails

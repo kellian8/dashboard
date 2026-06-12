@@ -1,20 +1,29 @@
 """create a cherrypy server and run in a new thread to serve the the store.json data."""
 
-import json
 from os import environ, path
 
 import cherrypy
 
-from .config import FILES
+from .config import ROOT_DIR
+from .services import JsonPersistenceClient
 
 
 class DashboardDataServer(object):
+    _data_client: JsonPersistenceClient = None
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def investments(self):
-        with open(path.join(FILES.temp_dir, 'store.json'), 'r') as sf:
-            data: str = json.load(sf)
-        return data
+        ts, investment_data = self._data_client.get_from_table('investments')
+        return {"timestamp": ts, "investments": investment_data}
+
+    def set_data_client(self, data_client):
+        if isinstance(data_client, JsonPersistenceClient):
+            self._data_client = data_client
+        else:
+            raise TypeError(
+                f"Dashboard Data Server Error - data_client must be a JsonPersistenceClient. Recieved '{type(data_client)}'"
+            )
 
 
 # Subscribes single scheduler/task executor application to cherrypy engine lifecyle.
@@ -30,10 +39,13 @@ def run_server():
 
     cherrypy.engine.autoreload.unsubscribe()
 
-    # Starts cherrypy engine and server with minor configuration
-    # (purposefully resets socket_timeout in the global config)
+    # Configure and start cherrypy engine
+    dashboard_data_server = DashboardDataServer()
+    dashboard_data_server.set_data_client(
+        JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
+    )
     cherrypy.quickstart(
-        DashboardDataServer(),
+        dashboard_data_server,
         "/api/v1/",
         {
             'global': {'server.socket_host': '0.0.0.0', 'server.socket_port': 8080, 'server.socket_timeout': 3},

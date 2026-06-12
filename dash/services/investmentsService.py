@@ -21,6 +21,7 @@ class InvestmentsService:
                 "investment API credentials are required. Please check they are loaded from environment correctly"
             )
 
+        logger.debug("Credential check - usr/= {} pswd/= {}", _username, _password)
         try:
             logger.info(f"Fetching account summary from {url}")
             res = requests.get(
@@ -29,15 +30,13 @@ class InvestmentsService:
                 auth=(_username, _password),
                 timeout=5,
             )
-
-            logger.debug(f"Response status: {res.status_code}")
-
+            # TODO: FIX - task exists to scheduler with a success status whether the request is successful or not
             if res.ok:
                 logger.success("Account summary data fetched successfully!")
                 data: Dict = res.json()
                 return data
             else:
-                logger.warning(f"Request returned non-OK status: {res.status_code} - {res.text}")
+                logger.warning(f"Request returned non-OK status: {res.reason} - {res.text}")
 
         except RequestException as e:
             logger.error("An error occurred while fetching trading account summary")
