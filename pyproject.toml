@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-shutdown = "stop:stop"
+shutdown = "scripts/stop:stop"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
