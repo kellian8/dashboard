@@ -4,7 +4,6 @@ import signal
 import threading
 from datetime import time
 from os import environ, mkdir, path
-from typing import List
 
 import cherrypy
 from dotenv import load_dotenv
@@ -75,26 +74,31 @@ def main():
     jsonStore = JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
     scheduler.addObserver(DataObserver(jsonStore))
 
+    shutdown_event = threading.Event()
+
+    # Hook into CherryPy's own stop event so Ctrl+C (which CherryPy intercepts)
+    # still triggers a clean application shutdown.
+    cherrypy.engine.subscribe('stop', lambda: (server_thread.join(timeout=5), shutdown_event.set()))
+
+    # SIGTERM is not claimed by CherryPy, so handle it directly.
+    def _handle_sigterm(signum, frame):
+        logger.info("Received signal {}, shutting down...", signum)
+        cherrypy.engine.exit()
+
+    signal.signal(signal.SIGTERM, _handle_sigterm)
+
     server_thread = threading.Thread(target=run_server, daemon=True, name="main-server-thread")
     server_thread.start()
 
-    shutdown_event = threading.Event()
-
-    def _handle_application_shutdown(signum, frame):
-        # Allows the graceful application exit on all shutdown signals.
-        # Cherrypy bus process shutdown initiated first through its signal handler.
-        # then main proc shutdown event triggered.
-        logger.info("Received signal {}, shutting down...", signum)
+    try:
+        shutdown_event.wait()
+    except KeyboardInterrupt:
+        logger.info("Shutdown signal received, shutting down...")
         cherrypy.engine.exit()
+    finally:
         server_thread.join(timeout=5)
-        shutdown_event.set()
-
-    signal.signal(signal.SIGTERM, _handle_application_shutdown)
-    signal.signal(signal.SIGINT, _handle_application_shutdown)
-
-    shutdown_event.wait()  # Shutdown event waits until defined signals
-    scheduler.shutdown()
-    logger.info("Application stopped")
+        scheduler.shutdown()
+        logger.info("Application stopped")
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ from loguru import logger
 from pydantic import BaseModel, PrivateAttr
 
 from ..config import TaskConfigs
+from ..services import StoreLike
 
 
 class TaskExecutionObserver(ABC, BaseModel):

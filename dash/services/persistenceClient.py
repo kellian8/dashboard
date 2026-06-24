@@ -54,8 +54,8 @@ class JsonPersistenceClient:
                         json.dump(store, sf)
 
     def _populate_fields_from_tuples(
-        self, store: Dict[str | Any], fields: List[tuple], table: str
-    ) -> Dict[str | Any] | None:
+        self, store: Dict[str, Any], fields: List[tuple], table: str
+    ) -> Dict[str, Any] | None:
         if fields is None:
             return None
         for field, value in fields:
@@ -63,7 +63,7 @@ class JsonPersistenceClient:
             store[f'{table}_timestamp'] = datetime.now(timezone.utc).isoformat()
         return store
 
-    def get_from_table(self, table_name: str) -> Dict[str | Any]:
+    def get_from_table(self, table_name: str) -> Dict[str, Any]:
         with self._store_lock:
             if os.path.isfile(self.store_path):
                 with open(self.store_path, 'r') as sf:

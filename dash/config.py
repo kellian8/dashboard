@@ -53,7 +53,7 @@ TaskConfigs = {
         schedules=[
             #            _FrozenNamespace(type="recurring_time", time=time(hour=23, minute=24, second=50)),
             # _FrozenNamespace(type="recurring_time", time=time(hour=8, minute=10, second=40)),
-            _TaskConfigSchedule(type="interval", interval=timedelta(seconds=10)),
+            _TaskConfigSchedule(type="interval", interval=timedelta(seconds=100)),
             # _FrozenNamespace(type="one_time", execution_time=datetime(2026, 6, 1, 22, 0)),
         ],
     )
