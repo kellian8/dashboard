@@ -43,10 +43,3 @@ class InvestmentsService:
             raise e
 
         return None
-
-    def format_price(self, value: Union[int, float, None]) -> str:
-        if value is None:
-            return "-"
-        if abs(value) >= 1000:
-            return f"£ {value:,.2f}"
-        return f"£ {value:.2f}"

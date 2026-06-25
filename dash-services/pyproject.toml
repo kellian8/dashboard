@@ -1,5 +1,5 @@
 [project]
-name = "dashboard"
+name = "dash"
 version = "0.1.0"
 description = ""
 authors = [
@@ -16,9 +16,6 @@ dependencies = [
     "loguru-config (>=0.1.0,<0.2.0) ; python_version >= \"3.12\" and python_version < \"4.0\""
 ]
 
-[project.scripts]
-shutdown = "scripts/stop:stop"
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
@@ -31,3 +28,6 @@ dev = [
 
 [tool.poetry]
 package-mode = false
+
+[tool.poetry.scripts]
+stop = "scripts.stop:stop"

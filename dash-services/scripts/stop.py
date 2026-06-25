@@ -8,7 +8,7 @@ from pathlib import Path
 
 import psutil
 
-_PROJECT_DIR = Path(__file__).parent.resolve()
+_PROJECT_DIR = Path(__file__).parent.parent.resolve()
 
 
 def _is_dashboard_process(pid: str) -> bool:

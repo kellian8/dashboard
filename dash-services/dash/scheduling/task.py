@@ -42,15 +42,14 @@ class FetchSummaryTask(Task):
 
             # Flatten the relevant properties into a list of key/value dicts.
             # Excludes: id, currency
-            fmt = self.investmentsService.format_price
             result = [
-                ("Current Value", fmt(investments.get("currentValue"))),
-                ("Realized P/L", fmt(investments.get("realizedProfitLoss"))),
-                ("Total Cost", fmt(investments.get("totalCost"))),
-                ("Unrealized P/L", fmt(investments.get("unrealizedProfitLoss"))),
+                ("Current Value", investments.get("currentValue")),
+                ("Realized P/L", investments.get("realizedProfitLoss")),
+                ("Total Cost", investments.get("totalCost")),
+                ("Unrealized P/L", investments.get("unrealizedProfitLoss")),
                 # totalValue and free cash live at the top level of the response
-                ("Total Value", fmt(summary_data.get("totalValue"))),
-                ("Free Cash", fmt(cash.get("availableToTrade"))),
+                ("Total Value", summary_data.get("totalValue")) ,
+                ("Free Cash", cash.get("availableToTrade")),
             ]
 
         self._data = result
