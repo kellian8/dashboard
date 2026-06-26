@@ -43,7 +43,7 @@ def stop(port: int = 8080):
         if not _is_dashboard_process(pid):
             print(f"PID {pid} on port {port} doesn't look like this app — aborting")
             sys.exit(1)
-        os.kill(int(pid), signal.SIGINT)
+        os.kill(int(pid), signal.SIGBREAK if sys.platform == "win32" else signal.SIGTERM)
         print(f"Sent CTRL_BREAK to PID {pid}")
 
 
