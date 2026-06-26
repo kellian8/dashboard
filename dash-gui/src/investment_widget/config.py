@@ -1,8 +1,9 @@
-"""Runtime configuration, persisted as ``config.json`` at the project root."""
+"""Runtime configuration, persisted as ``config.yml`` at the project root."""
 from __future__ import annotations
 
-import json
+import yaml
 from dataclasses import dataclass, field, asdict
+from loguru import logger
 
 from .paths import CONFIG_PATH
 
@@ -23,16 +24,25 @@ class Config:
     def load(cls) -> "Config":
         """Load config, writing a default file on first run."""
         if not CONFIG_PATH.exists():
+            logger.warning("Config not found at {} — writing defaults", CONFIG_PATH)
             cfg = cls()
             cfg.save()
             return cfg
-        raw = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        raw = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
         merged = {**_DEFAULTS, **raw}
-        return cls(
+        cfg = cls(
             endpoint_url=merged["endpoint_url"],
             poll_interval_seconds=int(merged["poll_interval_seconds"]),
             position=merged["position"],
         )
+        logger.info(
+            "Config loaded | endpoint={} poll_interval={}s position={}",
+            cfg.endpoint_url,
+            cfg.poll_interval_seconds,
+            cfg.position,
+        )
+        return cfg
 
     def save(self) -> None:
-        CONFIG_PATH.write_text(json.dumps(asdict(self), indent=2), encoding="utf-8")
+        CONFIG_PATH.write_text(yaml.dump(asdict(self), default_flow_style=False), encoding="utf-8")
+        logger.debug("Config saved to {}", CONFIG_PATH)

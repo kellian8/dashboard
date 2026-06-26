@@ -9,13 +9,15 @@ handlers:
   - sink: ext://sys.stdout
     level: 'DEBUG'
     filter: ext://utils.logging._stdout_filter
-    format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
+    format: '[<le>{time:HH:mm:ss.SSS}</le>] <level>{level.name:<8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | {message}'
     colorize: true
+    backtrace: true
     enqueue: true
 
   # stderr: ERROR and CRITICAL only
   - sink: ext://sys.stderr
     level: 'ERROR'
-    format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
+    format: '[<le>{time:HH:mm:ss.SSS}</le>] <level>{level.name:<8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | {message}'
     colorize: true
+    backtrace: true
     enqueue: true

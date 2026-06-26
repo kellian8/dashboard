@@ -9,7 +9,9 @@ Rectangle {
     Layout.fillWidth: true
     implicitHeight: body.implicitHeight + 14
     radius: 8
-    color: "#f5f5f5"
+    color: '#8042423d'
+    border.width: 1
+    border.color: "#77D5D6D0"
 
     ColumnLayout {
         id: body
@@ -21,13 +23,13 @@ Rectangle {
         Text {
             text: label
             font.pixelSize: 10
-            color: "#666666"
+            color: "#A8AAA1"
         }
         Text {
             text: value
             font.pixelSize: 14
-            font.weight: Font.Medium
-            color: "#111111"
+            font.weight: Font.DemiBold
+            color: "#ECEBE5"
         }
     }
 }

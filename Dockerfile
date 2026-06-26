@@ -1,19 +1,14 @@
-FROM anaconda/miniconda:latest
-WORKDIR /usr/home/app
+FROM python:3.12-slim
+WORKDIR /app
 
-COPY ./dash/ ./dash/
-COPY ./utils/ ./utils/
-COPY ./__main__.py ./__main__.py
-COPY ./environment.yml ./environment.yml
-COPY ./logging.yml ./logging.yml
-COPY ./readme.md ./readme.md
+RUN pip install --no-cache-dir "poetry==2.4.1"
 
-# Accept ToS via environment variable, create environment, and set it as default
-ENV CONDA_PLUGINS_AUTO_ACCEPT_TOS=true
-RUN conda env create -f environment.yml && \
-    conda config --set default_activation_env dash-env
+COPY pyproject.toml poetry.lock ./
 
-RUN useradd app
-USER app
+# Install only what the service needs — PyQt6 is never touched
+RUN poetry install --only services,shared --no-root
 
-CMD ["python", "./"]
+COPY dash-services/ ./
+
+EXPOSE 8080
+CMD ["poetry", "run", "python", "main.py"]

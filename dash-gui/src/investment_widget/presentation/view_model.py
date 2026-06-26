@@ -4,7 +4,7 @@ view binds to. Keys are camelCase because that is how they read on the QML side
 """
 from __future__ import annotations
 
-from ..domain import AccountSummary
+from ..data import AccountSummary
 from .formatting import GREY, MUTED, NEG_RED, arrow, money, sign_color
 
 _PLACEHOLDER = "—"

@@ -9,6 +9,8 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
+from loguru import logger
+
 from ..paths import DB_PATH
 
 
@@ -21,6 +23,7 @@ class SnapshotStore:
         return sqlite3.connect(self._db_path)
 
     def _ensure_schema(self) -> None:
+        logger.debug("Ensuring snapshot schema at {}", self._db_path)
         with self._connect() as conn:
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS snapshots ("
@@ -28,6 +31,7 @@ class SnapshotStore:
             )
 
     def insert(self, ts: datetime, total_value: float) -> None:
+        logger.debug("Inserting snapshot | ts={} value={:.2f}", ts.isoformat(), total_value)
         with self._connect() as conn:
             conn.execute(
                 "INSERT INTO snapshots (ts, total_value) VALUES (?, ?)",
@@ -45,4 +49,9 @@ class SnapshotStore:
                 "ORDER BY ABS(JULIANDAY(ts) - JULIANDAY(?)) LIMIT 1",
                 (target,),
             ).fetchone()
-        return row[0] if row else None
+        baseline = row[0] if row else None
+        if baseline is None:
+            logger.debug("No 24h baseline available yet")
+        else:
+            logger.debug("24h baseline: {:.2f}", baseline)
+        return baseline

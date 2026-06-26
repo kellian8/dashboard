@@ -13,11 +13,11 @@ class DashboardDataServer(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def investments(self):
+    def summary(self):
         ts, investment_data = self._data_client.get_from_table('investments')
         return {"timestamp": ts, "investments": investment_data}
 
-    def set_data_client(self, data_client):
+    def _set_data_client(self, data_client):
         if isinstance(data_client, JsonPersistenceClient):
             self._data_client = data_client
         else:
@@ -41,7 +41,7 @@ def run_server():
 
     # Configure and start cherrypy engine
     dashboard_data_server = DashboardDataServer()
-    dashboard_data_server.set_data_client(
+    dashboard_data_server._set_data_client(
         JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
     )
     cherrypy.quickstart(

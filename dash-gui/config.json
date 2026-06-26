@@ -1,5 +1,0 @@
-{
-  "endpoint_url": "http://localhost:8000/summary",
-  "poll_interval_seconds": 60,
-  "position": { "x": 20, "y": 20 }
-}

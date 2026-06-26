@@ -1,0 +1,40 @@
+[project]
+name = "dashboard"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "cheleaux", email = "nazareth.dnd@gmail.com"}
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.logging]
+config-file = "logging.yml"
+
+# ── shared by both apps ──────────────────────────────────────────────────────
+[tool.poetry.group.shared.dependencies]
+pyaml = ">=26.2.1,<27.0.0"
+loguru = { version = ">=0.7.3,<0.8.0", python = ">=3.12,<4.0" }
+loguru-config = { version = ">=0.1.0,<0.2.0", python = ">=3.12,<4.0" }
+
+# ── dash-gui ─────────────────────────────────────────────────────────────────
+[tool.poetry.group.gui.dependencies]
+pyqt6 = ">=6.11.0,<7.0.0"
+requests = ">=2.32.0,<3.0.0"
+
+# ── dash-services ─────────────────────────────────────────────────────────────
+[tool.poetry.group.services.dependencies]
+pydantic = ">=2.13.4,<3.0.0"
+requests = ">=2.34.2,<3.0.0"
+cherrypy = ">=18.10.0,<19.0.0"
+
+[tool.poetry.group.services-dev.dependencies]
+python-dotenv = ">=1.2.2,<2.0.0"
+psutil = ">=6.0.0"

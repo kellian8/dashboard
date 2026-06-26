@@ -6,10 +6,11 @@ signals carrying a domain ``AccountSummary`` (or an error string).
 """
 from __future__ import annotations
 
+from loguru import logger
 from PyQt6.QtCore import QObject, QThread, QTimer, pyqtSignal
 
-from ..data import ApiClient
-from ..domain import AccountSummary
+from ..data import AccountSummary
+from .api_client import ApiClient
 
 
 class _FetchWorker(QThread):
@@ -21,10 +22,13 @@ class _FetchWorker(QThread):
         self._client = client
 
     def run(self) -> None:
+        logger.debug("Fetch worker started")
         try:
             summary = AccountSummary.from_json(self._client.fetch())
+            logger.debug("Fetch worker succeeded")
             self.succeeded.emit(summary)
         except Exception as exc:  # noqa: BLE001 - surfaced to the UI as text
+            logger.opt(exception=True).warning("Fetch worker failed: {}", exc)
             self.failed.emit(str(exc))
 
 
@@ -41,14 +45,18 @@ class Poller(QObject):
         self._timer = QTimer(self)
         self._timer.setInterval(interval_seconds * 1000)
         self._timer.timeout.connect(self._tick)
+        logger.debug("Poller configured with interval={}s", interval_seconds)
 
     def start(self) -> None:
+        logger.info("Poller starting")
         self._tick()          # fetch immediately on launch
         self._timer.start()
 
     def _tick(self) -> None:
         if self._worker is not None and self._worker.isRunning():
-            return            # skip if the previous fetch is still in flight
+            logger.warning("Tick skipped — previous fetch still in flight")
+            return
+        logger.debug("Tick: spawning fetch worker")
         self._worker = _FetchWorker(self._client, self)
         self._worker.succeeded.connect(self.summaryReady)
         self._worker.failed.connect(self.fetchFailed)

@@ -5,9 +5,11 @@ __pycache__/
 *.egg-info/
 /dist/
 /build/
+**/poetry.lock
+!poetry.lock
 
 # storage
-temp/
+dash-services/dash/temp/
 *.db
 
 # Environment

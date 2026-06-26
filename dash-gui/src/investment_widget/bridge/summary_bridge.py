@@ -7,6 +7,7 @@ to talk to.
 """
 from __future__ import annotations
 
+from loguru import logger
 from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal
 
 from ..presentation import empty_view_model
@@ -27,7 +28,9 @@ class SummaryBridge(QObject):
     def set_model(self, model: dict) -> None:
         self._model = model
         self.modelChanged.emit()
+        logger.debug("Model pushed to QML")
 
     def show_error(self, message: str) -> None:
+        logger.warning("Displaying error in UI: {}", message)
         self._model = error_patch(self._model, message)
         self.modelChanged.emit()

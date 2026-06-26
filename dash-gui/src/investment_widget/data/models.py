@@ -30,5 +30,5 @@ class AccountSummary:
             unrealized_pl=float(inv["Unrealized P/L"]),
             total_value=float(inv["Total Value"]),
             free_cash=float(inv["Free Cash"]),
-            timestamp=datetime.fromisoformat(data["investments_timestamp"]),
+            timestamp=datetime.fromisoformat(data["timestamp"]),
         )

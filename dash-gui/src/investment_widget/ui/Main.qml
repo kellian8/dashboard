@@ -9,9 +9,17 @@ Window {
     width: 390
     height: root.implicitHeight + 24
     visible: true
-    color: "white"
+    color: "transparent"
     title: "Investments"
-    flags: Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnBottomHint
+    flags: Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnBottomHint | Qt.NoDropShadowWindowHint
+
+    Rectangle {
+        anchors.fill: parent
+        radius: 6
+        color: '#313b3c36'
+        border.color: '#c7494945'
+        border.width: 0.5
+    }
 
     // The single binding surface to Python. Re-evaluates on modelChanged.
     property var m: bridge.model
@@ -31,7 +39,8 @@ Window {
             Text {
                 text: "Total value"
                 font.pixelSize: 12
-                color: "#666666"
+                font.weight: Font.Bold
+                color: "#B6B7AF"
                 bottomPadding: 7
             }
 
@@ -47,9 +56,9 @@ Window {
                     Text {
                         text: m.totalValue
                         font.pixelSize: 32
-                        font.weight: Font.Medium
-                        color: "#111111"
-                        bottomPadding: 10
+                        font.weight: Font.Bold
+                        color: "#E4E3DD"
+                        bottomPadding: 5
                     }
                     RowLayout {
                         spacing: 20
@@ -84,7 +93,7 @@ Window {
                 Layout.topMargin: 8
                 Layout.fillWidth: true
                 implicitHeight: 1
-                color: "#cccccc"
+                color: "#88C9CAC3"
             }
         }
 
@@ -102,7 +111,7 @@ Window {
             Layout.topMargin: 4
             text: m.updatedText
             font.pixelSize: 10
-            color: m.updatedColor
+            color: m.updatedText.startsWith("Error") ? m.updatedColor : "#A5A69E"
         }
     }
 }

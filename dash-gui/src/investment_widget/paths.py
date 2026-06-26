@@ -11,7 +11,7 @@ from pathlib import Path
 PACKAGE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = PACKAGE_DIR.parents[1]
 
-CONFIG_PATH = PROJECT_ROOT / "config.json"
+CONFIG_PATH = PROJECT_ROOT / "config.yml"
 DB_PATH = PROJECT_ROOT / "snapshots.db"
 UI_DIR = PACKAGE_DIR / "ui"
 MAIN_QML = UI_DIR / "Main.qml"

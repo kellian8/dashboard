@@ -5,10 +5,10 @@ negative) in one place so the view model and QML stay consistent.
 """
 from __future__ import annotations
 
-POS_GREEN = "#3B6D11"
-NEG_RED = "#A32D2D"
-GREY = "#999999"
-MUTED = "#aaaaaa"
+POS_GREEN = "#8FCF5D"
+NEG_RED = "#E17C7C"
+GREY = "#A8AAA2"
+MUTED = "#9FA197"
 
 
 def money(value: float) -> str:
