@@ -8,7 +8,7 @@ handlers:
   # stdout: DEBUG, INFO, WARNING only
   - sink: ext://sys.stdout
     level: 'DEBUG'
-    filter: ext://__main__._stdout_filter
+    filter: ext://utils.logging._stdout_filter
     format: '[<le>{time}</le>] <level>{level.name:<8}</level> | {message}'
     colorize: true
     enqueue: true

@@ -3,16 +3,12 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.egg-info/
-dist/
-build/
+/dist/
+/build/
 
-# Conda
-env/
-envs/
-*.conda
-
-# Temp
-dash/temp/
+# storage
+temp/
+*.db
 
 # Environment
 .env

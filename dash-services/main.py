@@ -1,7 +1,14 @@
 """Initiate the application instance and load main window"""
 
 import signal
+import sys
 import threading
+import tomllib
+from pathlib import Path
+
+# Make shared project-root packages (e.g. utils) importable.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from datetime import time
 from os import environ, mkdir, path
 
@@ -32,15 +39,19 @@ _STRATEGY_BUILDERS = {
     "one_time": lambda s: OneTimeSchedulingStrategy(execution_time=s.execution_time),
 }
 
-
-def _stdout_filter(record):
-    """Allow only DEBUG, INFO, and WARNING through to stdout."""
-    return record["level"].no < 40  # 40 = ERROR
+def initialise_logger():
+    """Initialise the logger with the configuration from logging.yml"""
+    with open('pyproject.toml', 'rb') as pp:
+        logging_conf = tomllib.load(pp).get('tool', {}).get('logging', {}).get('config-file', None)
+        if logging_conf:
+            LoguruConfig.load(path.abspath(logging_conf))
+        else:
+            logger.warning("No logging configuration found in pyproject.toml. Using default logger configuration.")
 
 
 def main():
     # Load logging configuration from file
-    LoguruConfig.load(path.join(path.dirname(__file__), "logging.yml"))
+    initialise_logger()
     logger.info("Application logger configured successfully and running")
     logger.info("Starting application!")
 

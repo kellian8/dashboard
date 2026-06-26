@@ -2,6 +2,7 @@ FROM anaconda/miniconda:latest
 WORKDIR /usr/home/app
 
 COPY ./dash/ ./dash/
+COPY ./utils/ ./utils/
 COPY ./__main__.py ./__main__.py
 COPY ./environment.yml ./environment.yml
 COPY ./logging.yml ./logging.yml
