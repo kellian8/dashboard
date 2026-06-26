@@ -8,12 +8,15 @@ from pathlib import Path
 
 import psutil
 
-_PROJECT_DIR = Path(__file__).parent.parent.resolve()
+_ALLOWED_DIRS = {
+    Path(__file__).parent.parent.resolve(),         # dash-services/
+    Path(__file__).parent.parent.parent.resolve(),  # repo root
+}
 
 
 def _is_dashboard_process(pid: str) -> bool:
     try:
-        return Path(psutil.Process(int(pid)).cwd()) == _PROJECT_DIR
+        return Path(psutil.Process(int(pid)).cwd()) in _ALLOWED_DIRS
     except (psutil.NoSuchProcess, psutil.AccessDenied):
         return False
 
