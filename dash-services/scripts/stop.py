@@ -22,12 +22,18 @@ def _is_dashboard_process(pid: str) -> bool:
 
 
 def stop(port: int = 8080):
-    result = subprocess.run(
-        f"netstat -ano | findstr :{port} | findstr LISTENING",
-        capture_output=True, text=True, shell=True
-    )
-
-    pids = {line.split()[-1] for line in result.stdout.splitlines() if line.strip()}
+    if sys.platform == "win32":
+        result = subprocess.run(
+            f"netstat -ano | findstr :{port} | findstr LISTENING",
+            capture_output=True, text=True, shell=True
+        )
+        pids = {line.split()[-1] for line in result.stdout.splitlines() if line.strip()}
+    else:
+        result = subprocess.run(
+            ["lsof", "-i", f":{port}", "-t", "-s", "TCP:LISTEN"],
+            capture_output=True, text=True
+        )
+        pids = {line.strip() for line in result.stdout.splitlines() if line.strip()}
 
     if not pids:
         print(f"No process found listening on port {port}")
