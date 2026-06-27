@@ -11,7 +11,7 @@ Window {
     visible: true
     color: "transparent"
     title: "Investments"
-    flags: Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnBottomHint | Qt.NoDropShadowWindowHint
+    flags: Qt.FramelessWindowHint | Qt.Tool | Qt.WindowStaysOnBottomHint | Qt.NoDropShadowWindowHint | Qt.Tool | Qt.WindowDoesNotAcceptFocus
 
     Rectangle {
         anchors.fill: parent

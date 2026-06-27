@@ -17,7 +17,7 @@ investment-widget/
     ├── paths.py                  # project paths in one place
     ├── domain/                   # pure entities (AccountSummary) — no Qt
     ├── data/                     # ApiClient (HTTP) + SnapshotStore (SQLite)
-    ├── services/                 # Poller (timer + worker thread), BottomPinner
+    ├── services/                 # Poller (timer + worker thread), WindowBehavour
     ├── presentation/             # formatting + AccountSummary → view-model dict
     ├── bridge/                   # SummaryBridge — the only Python object QML sees
     └── ui/                       # QML views (Main, PLColumn, MetricCard, StatItem)

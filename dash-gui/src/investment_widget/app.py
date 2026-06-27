@@ -20,7 +20,7 @@ from .config import Config
 from .data import AccountSummary, SnapshotStore
 from .paths import MAIN_QML
 from .presentation import build_view_model
-from .services import ApiClient, BottomPinner, Poller
+from .services import ApiClient, WidgetBehaviour, Poller
 
 
 class Application:
@@ -47,7 +47,7 @@ class Application:
 
         self._window = self._engine.rootObjects()[0]
         self._position_window()
-        self._pinner = BottomPinner(self._window)
+        self._widget_behaviour_manager = WidgetBehaviour(self._window)
 
         self._poller.summaryReady.connect(self._on_summary)
         self._poller.fetchFailed.connect(self._on_error)

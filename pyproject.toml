@@ -28,6 +28,7 @@ loguru-config = { version = ">=0.1.0,<0.2.0", python = ">=3.12,<4.0" }
 [tool.poetry.group.gui.dependencies]
 pyqt6 = ">=6.11.0,<7.0.0"
 requests = ">=2.32.0,<3.0.0"
+pyobjc-framework-Quartz = "*"
 
 # ── dash-services ─────────────────────────────────────────────────────────────
 [tool.poetry.group.services.dependencies]
