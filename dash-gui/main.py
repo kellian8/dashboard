@@ -1,10 +1,8 @@
 """Entry point. Run with: python main.py"""
 import os
 import sys
-import tomllib
 from pathlib import Path
 from loguru import logger
-from loguru_config import LoguruConfig
 
 # Static widget — the software scene-graph renders identically and avoids the
 # GPU backend failing when launched early at startup. Overridable via the env.
@@ -16,20 +14,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from investment_widget.app import Application
-from investment_widget.signal_tether import run_signal_tether 
-
-
+from investment_widget.signal_tether import run_signal_tether
+from logging_conf import load_logging_config
 
 def main() -> int:
-    
-    # Initialise the logger with the configuration from logging.yml
-    with open('pyproject.toml', 'rb') as pp:
-        logging_conf = tomllib.load(pp).get('tool', {}).get('logging', {}).get('config-file', None)
-        if logging_conf:
-            LoguruConfig.load(os.path.abspath(logging_conf))
-        else:
-            logger.warning("No logging configuration found in pyproject.toml. Using default logger configuration.")
-
+    """Entry point for the dash-gui application."""
+    load_logging_config(Path(__file__).resolve().parent / "pyproject.toml")
     logger.info("dash-gui starting up")
     widget = Application()
     _signal_tether = run_signal_tether()

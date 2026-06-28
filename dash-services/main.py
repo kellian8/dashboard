@@ -15,7 +15,6 @@ from os import environ, mkdir, path
 import cherrypy
 from dotenv import load_dotenv
 from loguru import logger
-from loguru_config import LoguruConfig
 
 logger.info("Loading environment variables for application process")
 load_dotenv()
@@ -33,25 +32,17 @@ from dash.server import run_server
 from dash.services import InvestmentsService, JsonPersistenceClient
 from dash.services.schedulingService import TaskSchedulerService
 
+from logging_conf import load_logging_config
+
 _STRATEGY_BUILDERS = {
     "recurring_time": lambda s: RecurringTimeSchedulingStrategy(time=s.time),
     "interval": lambda s: RecurringSchedulingStrategy(interval=s.interval),
     "one_time": lambda s: OneTimeSchedulingStrategy(execution_time=s.execution_time),
 }
 
-def initialise_logger():
-    """Initialise the logger with the configuration from logging.yml"""
-    with open('pyproject.toml', 'rb') as pp:
-        logging_conf = tomllib.load(pp).get('tool', {}).get('logging', {}).get('config-file', None)
-        if logging_conf:
-            LoguruConfig.load(path.abspath(logging_conf))
-        else:
-            logger.warning("No logging configuration found in pyproject.toml. Using default logger configuration.")
-
-
 def main():
     # Load logging configuration from file
-    initialise_logger()
+    load_logging_config(Path(__file__).resolve().parent / "pyproject.toml")
     logger.info("Application logger configured successfully and running")
     logger.info("Starting application!")
 

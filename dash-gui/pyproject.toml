@@ -1,2 +1,2 @@
 [tool.logging]
-config-file = "../logging.yml"
+config-file = "logging.yml"

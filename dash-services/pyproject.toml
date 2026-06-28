@@ -2,4 +2,4 @@
 stop = "scripts.stop:stop"
 
 [tool.logging]
-config-file = "../logging.yml"
+config-file = "logging.yml"
