@@ -1,5 +1,5 @@
 endpoint_url: "http://127.0.0.1:8080/api/v1/summary"
-poll_interval_seconds: 60
+poll_interval_seconds: 3600
 position:
   x: 20
   y: 20

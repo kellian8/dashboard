@@ -16,6 +16,7 @@ from .api_client import ApiClient
 class _FetchWorker(QThread):
     succeeded = pyqtSignal(object)  # AccountSummary
     failed = pyqtSignal(str)
+    finished = pyqtSignal()
 
     def __init__(self, client: ApiClient, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -30,6 +31,8 @@ class _FetchWorker(QThread):
         except Exception as exc:  # noqa: BLE001 - surfaced to the UI as text
             logger.opt(exception=True).warning("Fetch worker failed: {}", exc)
             self.failed.emit(str(exc))
+        finally:
+            self.finished.emit()
 
 
 class Poller(QObject):
@@ -45,6 +48,7 @@ class Poller(QObject):
         self._timer = QTimer(self)
         self._timer.setInterval(interval_seconds * 1000)
         self._timer.timeout.connect(self._tick)
+
         logger.debug("Poller configured with interval={}s", interval_seconds)
 
     def start(self) -> None:
@@ -56,8 +60,10 @@ class Poller(QObject):
         if self._worker is not None and self._worker.isRunning():
             logger.warning("Tick skipped — previous fetch still in flight")
             return
+
         logger.debug("Tick: spawning fetch worker")
         self._worker = _FetchWorker(self._client, self)
         self._worker.succeeded.connect(self.summaryReady)
         self._worker.failed.connect(self.fetchFailed)
+        self._worker.finished.connect(self._worker.deleteLater)
         self._worker.start()

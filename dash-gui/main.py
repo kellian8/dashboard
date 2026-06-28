@@ -15,7 +15,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 # Make shared project-root packages (e.g. utils) importable.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from investment_widget.app import Application  # noqa: E402
+from investment_widget.app import Application
+from investment_widget.signal_tether import run_signal_tether 
+
 
 
 def main() -> int:
@@ -29,7 +31,9 @@ def main() -> int:
             logger.warning("No logging configuration found in pyproject.toml. Using default logger configuration.")
 
     logger.info("dash-gui starting up")
-    exit_code = Application().run()
+    widget = Application()
+    _signal_tether = run_signal_tether()
+    exit_code = widget.run()
     logger.info("dash-gui shut down | exit_code={}", exit_code)
     return exit_code
 

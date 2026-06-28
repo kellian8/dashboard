@@ -61,8 +61,7 @@ class Application:
 
     def _on_summary(self, summary: AccountSummary) -> None:
         logger.info(
-            "Summary received | total={:.2f} ts={}",
-            summary.total_value,
+            "Summary received | ts={}",
             summary.timestamp.isoformat(),
         )
         self._store.insert(summary.timestamp, summary.total_value)
