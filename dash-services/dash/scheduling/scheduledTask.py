@@ -14,6 +14,7 @@ class ScheduledTask(BaseModel):
     task: Task
     strategy: SchedulingStrategy
     sequence_number: int
+    callback: Optional[Task] = None  # Optional callback task to execute after this task completes
 
     # Private per-instance state
     _id: str = PrivateAttr(default_factory=lambda: str(uuid.uuid4()))
@@ -37,6 +38,10 @@ class ScheduledTask(BaseModel):
     @property
     def status(self) -> TaskStatus:
         return self._status
+    
+    @property
+    def callback_task(self) -> Optional[str]:
+        return self.callback
 
     @status.setter
     def status(self, value: TaskStatus) -> None:

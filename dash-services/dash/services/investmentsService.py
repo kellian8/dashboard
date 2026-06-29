@@ -5,13 +5,13 @@ import requests
 from loguru import logger
 from requests.exceptions import RequestException
 
-from ..config import BASE_URL, ENDPOINTS
+from ..config import T212_BASE_URL, ENDPOINTS, GUI_HOST, GUI_PORT
 
 
 class InvestmentsService:
     def get_summary(self) -> Optional[Dict]:
         # Build the full endpoint URL for the account summary
-        url = f"{BASE_URL}{ENDPOINTS.summary}"
+        url = f"{T212_BASE_URL}{ENDPOINTS.summary}"
         _username = environ.get('TRADING212_KEY_ID')
         _password = environ.get('TRADING212_AUTH_KEY')
 
@@ -43,3 +43,27 @@ class InvestmentsService:
             raise e
 
         return None
+
+    def push_summary_to_gui(self, summary_data: Dict) -> bool:
+        url = f"{GUI_HOST}:{GUI_PORT}{ENDPOINTS.push_summary}"
+        try:
+            logger.info(f"POST {url}")
+            res = requests.post(
+                url,
+                json=summary_data,
+                timeout=5,
+            )
+            if res.ok:
+                data: Dict = res.json()
+                success = data.get("success", False)
+                if success:
+                    logger.success("Account summary pushed to dash gui successfully!")
+                    return True
+            else:
+                logger.warning(f"Request returned non-OK status: {res.reason} - {res.text}")
+
+        except RequestException as e:
+            logger.error("An error occurred while pushing account summary")
+            raise e
+
+        return False

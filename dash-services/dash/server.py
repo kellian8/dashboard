@@ -4,7 +4,7 @@ from os import environ, path
 
 import cherrypy
 
-from .config import ROOT_DIR
+from .config import ROOT_DIR, SERVICES_PORT, SERVER_HOST
 from .services import JsonPersistenceClient
 
 
@@ -26,6 +26,9 @@ class DashboardDataServer(object):
             )
 
 
+
+
+
 # Subscribes single scheduler/task executor application to cherrypy engine lifecyle.
 # Chosen methods are exposed at the base url on port 8080 (default).
 # TODO: secure application endpoints with shared app credentials (can be managed through
@@ -33,8 +36,8 @@ class DashboardDataServer(object):
 def run_server():
     # explicit socket timeout definition to skirt windows specific TIME_WAIT on wanted
     # port after server exits before daemon thread exits.
-    cherrypy.server.socket_host = '0.0.0.0'
-    cherrypy.server.socket_port = 8080
+    cherrypy.server.socket_host = SERVER_HOST
+    cherrypy.server.socket_port = SERVICES_PORT
     cherrypy.server.socket_timeout = 3
 
     cherrypy.engine.autoreload.unsubscribe()
@@ -48,7 +51,6 @@ def run_server():
         dashboard_data_server,
         "/api/v1/",
         {
-            'global': {'server.socket_host': '0.0.0.0', 'server.socket_port': 8080, 'server.socket_timeout': 3},
-            "/api/v1": {},
+            'global': {'server.socket_host': SERVER_HOST, 'server.socket_port': SERVICES_PORT, 'server.socket_timeout': 3},
         },
     )

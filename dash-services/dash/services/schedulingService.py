@@ -1,13 +1,13 @@
 import heapq
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 from loguru import logger
 
 from ..scheduling.observer import TaskExecutionObserver
 from ..scheduling.scheduledTask import ScheduledTask
-from ..scheduling.schedulingStrategy import SchedulingStrategy
+from ..scheduling.schedulingStrategy import SchedulingStrategy, OneTimeSchedulingStrategy
 from ..scheduling.task import Task
 from ..scheduling.taskStatus import TaskStatus
 
@@ -49,7 +49,7 @@ class TaskSchedulerService:
             worker.start()
         logger.info(f"Started {worker_count} scheduler worker threads!")
 
-    def schedule(self, task: Task, strategy: SchedulingStrategy) -> str:
+    def schedule(self, task: Task, strategy: SchedulingStrategy, callback: Optional[Task] = None) -> str:
         if not self._running:
             raise RuntimeError("Scheduler is not running!")
 
@@ -57,14 +57,27 @@ class TaskSchedulerService:
             # Increment to sequence counter task can be sorted pass execution_time
             self._sequence_counter = self._sequence_counter + 1
             scheduled_task: ScheduledTask = ScheduledTask(
-                task=task, strategy=strategy, sequence_number=self._sequence_counter
+                task=task,
+                strategy=strategy,
+                sequence_number=self._sequence_counter,
+                callback=callback if callback else None
             )
             heapq.heappush(self._task_queue, scheduled_task)
+
             logger.info(
                 "Task '{}' scheduled for {}",
                 task.get_name(),
                 scheduled_task.next_execution_time.strftime("%d %b %Y at %H:%M:%S"),
+                scheduled_task.callback.get_name() if scheduled_task.callback else "None",
             )
+
+            if callback:
+                logger.info(
+                    "Callback task '{}' scheduled to run on completion of '{}'",
+                    scheduled_task.callback.get_name(),
+                    task.get_name(),
+                )
+
             self._condition.notify_all()
         return scheduled_task.id
 
@@ -133,6 +146,16 @@ class TaskSchedulerService:
             # Catch ALL exceptions so a failing task never kills the worker
             scheduled_task.status = TaskStatus.FAILED
             self._notify_observers_failed(scheduled_task, e)
+
+        if (
+            scheduled_task.callback_task is not None and 
+            scheduled_task.status == TaskStatus.COMPLETED
+        ):
+            # Schedule the callback task to run immediately after the main task completes
+            self.schedule(
+                task=scheduled_task.callback_task,
+                strategy=OneTimeSchedulingStrategy(execution_time=(datetime.now() + timedelta(seconds=30))),
+            )
 
         # Whether the task succeeded or failed, check if it should run again.
         # For one-time tasks, update_for_next_execution() sets next_execution_time to None.

@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import sys
+import cherrypy
 
 from loguru import logger
 from PyQt6.QtCore import QUrl
@@ -19,6 +20,7 @@ from .bridge import SummaryBridge
 from .config import Config
 from .data import AccountSummary, SnapshotStore
 from .paths import MAIN_QML
+from .ingest import IngestServerThread
 from .presentation import build_view_model
 from .services import ApiClient, WidgetBehaviour, Poller
 
@@ -74,7 +76,13 @@ class Application:
 
     def run(self) -> int:
         logger.info("Starting poller and entering Qt event loop")
-        self._poller.start()
+        # self._poller.start()
+        # Start the ingest server in a separate thread to handle incoming summary updates
+        self._ingest_server = IngestServerThread()
+        self._ingest_server.summaryReady.connect(self._on_summary)
+        self._ingest_server.finished.connect(self._ingest_server.deleteLater)
+        self._ingest_server.start()
+        
         exit_code = self._qt_app.exec()
         logger.info("Qt event loop exited with code {}", exit_code)
         return exit_code

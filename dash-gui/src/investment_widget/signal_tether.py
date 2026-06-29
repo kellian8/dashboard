@@ -1,4 +1,7 @@
 import signal
+import cherrypy
+from collections.abc import Callable
+
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QGuiApplication
 from loguru import logger
@@ -16,6 +19,7 @@ def run_signal_tether() -> None:
 
     def _quit(sig, _frame):
         logger.info("Signal {} received — requesting graceful shutdown", sig)
+        cherrypy.engine.exit()  # stop the ingest server
         QGuiApplication.quit()
 
     signal.signal(signal.SIGTERM, _quit)

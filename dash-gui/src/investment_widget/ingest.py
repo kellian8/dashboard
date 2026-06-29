@@ -1,0 +1,46 @@
+import os
+import cherrypy
+
+from .data.models import AccountSummary
+
+from PyQt6.QtCore import QThread, pyqtSignal, QObject
+from loguru import logger
+
+
+class IngestServer(QObject):
+    summaryRequestSucceeded = pyqtSignal(object)  # AccountSummary
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def summary(self):
+        data = cherrypy.request.json
+        logger.info("Recieved summary data update request")
+        try:
+            summary = AccountSummary.from_dict(data)
+            self.summaryRequestSucceeded.emit(summary)
+            return {"success": True, "message": "Gui summary updated"}
+        except Exception as e:
+            logger.error("Failed to process summary data: {}", e)
+            return {"success": False, "message": str(e)}
+
+
+class IngestServerThread(QThread):
+    summaryReady = pyqtSignal(object)  # AccountSummary
+
+    def __init__(self, ) -> None:
+        super().__init__()
+        self._server = IngestServer()
+
+    def run(self) -> None:
+        """Run the ingest script."""
+        logger.debug("Server started")
+        self._server.summaryRequestSucceeded.connect(self.summaryReady)
+        cherrypy.quickstart(
+            self._server,
+            "/ingest",
+            {
+                'global': {'server.socket_host': os.getenv("SERVER_HOST"), 'server.socket_port': int(os.getenv("GUI_PORT")), 'server.socket_timeout': 3},
+                "/": {},
+            },
+        )

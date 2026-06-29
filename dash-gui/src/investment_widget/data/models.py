@@ -20,7 +20,7 @@ class AccountSummary:
         return self.unrealized_pl + self.realized_pl
 
     @classmethod
-    def from_json(cls, data: dict) -> "AccountSummary":
+    def from_dict(cls, data: dict) -> "AccountSummary":
         """Parse the endpoint payload. Values are plain numbers (no symbols)."""
         inv = data["investments"]
         return cls(
@@ -32,3 +32,4 @@ class AccountSummary:
             free_cash=float(inv["Free Cash"]),
             timestamp=datetime.fromisoformat(data["timestamp"]),
         )
+

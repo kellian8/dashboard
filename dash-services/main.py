@@ -23,6 +23,7 @@ from dash.config import ROOT_DIR, TaskConfigs
 from dash.scheduling import (
     DataObserver,
     FetchSummaryTask,
+    UpdateGuiSummaryTask,
     LoggingObserver,
     OneTimeSchedulingStrategy,
     RecurringSchedulingStrategy,
@@ -38,6 +39,11 @@ _STRATEGY_BUILDERS = {
     "recurring_time": lambda s: RecurringTimeSchedulingStrategy(time=s.time),
     "interval": lambda s: RecurringSchedulingStrategy(interval=s.interval),
     "one_time": lambda s: OneTimeSchedulingStrategy(execution_time=s.execution_time),
+}
+
+_TASK_MAP = {
+    "fetch_investment_summary": FetchSummaryTask,
+    "update_gui_summary": UpdateGuiSummaryTask,
 }
 
 def main():
@@ -56,12 +62,15 @@ def main():
     scheduler.initialize(worker_count=2)
     investmentsService = InvestmentsService()
 
+    jsonStore = JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
+
     config = TaskConfigs["FETCH_SUMMARY"]
     if config.schedules:
         for sched in config.schedules:
             scheduler.schedule(
                 task=FetchSummaryTask(investmentsService=investmentsService),
                 strategy=_STRATEGY_BUILDERS[sched.type](sched),
+                callback=_TASK_MAP[config.callback](store=jsonStore, investmentsService=investmentsService),
             )
     else:
         logger.warning(
@@ -69,11 +78,8 @@ def main():
             config.name,
         )
 
-    # registering observers after QApplication setup so BridgeDataObserver
-    # has access to the the active main window Bridge
     scheduler.addObserver(LoggingObserver())
     # Pass persistance client as store object param
-    jsonStore = JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
     scheduler.addObserver(DataObserver(jsonStore))
 
     shutdown_event = threading.Event()

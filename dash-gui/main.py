@@ -1,8 +1,12 @@
 """Entry point. Run with: python main.py"""
 import os
 import sys
+import cherrypy
 from pathlib import Path
 from loguru import logger
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # Static widget — the software scene-graph renders identically and avoids the
 # GPU backend failing when launched early at startup. Overridable via the env.
@@ -16,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from investment_widget.app import Application
 from investment_widget.signal_tether import run_signal_tether
 from logging_conf import load_logging_config
+
 
 def main() -> int:
     """Entry point for the dash-gui application."""

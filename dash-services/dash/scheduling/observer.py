@@ -1,37 +1,39 @@
 import threading
 from abc import ABC, abstractmethod
+from typing import List
 
 from loguru import logger
 from pydantic import BaseModel, PrivateAttr
 
 from ..config import TaskConfigs
 from ..services import StoreLike
+from .scheduledTask import ScheduledTask
 
 
 class TaskExecutionObserver(ABC, BaseModel):
     @abstractmethod
-    def on_task_started(self, task: 'ScheduledTask') -> None:
+    def on_task_started(self, task: ScheduledTask) -> None:
         pass
 
     @abstractmethod
-    def on_task_completed(self, task: 'ScheduledTask') -> None:
+    def on_task_completed(self, task: ScheduledTask) -> None:
         pass
 
     @abstractmethod
-    def on_task_failed(self, task: 'ScheduledTask', exception: Exception) -> None:
+    def on_task_failed(self, task: ScheduledTask, exception: Exception) -> None:
         pass
 
 
 class LoggingObserver(TaskExecutionObserver):
-    def on_task_started(self, task: 'ScheduledTask') -> None:
+    def on_task_started(self, task: ScheduledTask) -> None:
         thread_name = threading.current_thread().name
         logger.info("[{}] Task '{}' started", thread_name, task.task.get_name())
 
-    def on_task_completed(self, task: 'ScheduledTask') -> None:
+    def on_task_completed(self, task: ScheduledTask) -> None:
         thread_name = threading.current_thread().name
         logger.success("[{}] Task '{}' completed successfully", thread_name, task.task.get_name())
 
-    def on_task_failed(self, task: 'ScheduledTask', exception: Exception) -> None:
+    def on_task_failed(self, task: ScheduledTask, exception: Exception) -> None:
         thread_name = threading.current_thread().name
         logger.error("[{}] Task '{}' failed", thread_name, task.task.get_name())
         logger.exception(exception)
@@ -49,16 +51,16 @@ class DataObserver(TaskExecutionObserver):
         else:
             raise TypeError("Data observer couldn't be instantiated. Must provide a valid store client")
 
-    def on_task_started(self, task: 'ScheduledTask') -> None:
+    def on_task_started(self, task: ScheduledTask) -> None:
         pass
 
-    def on_task_completed(self, task: 'ScheduledTask') -> None:
+    def on_task_completed(self, task: ScheduledTask) -> None:
         # Route to the correct UI update callback based on the task's name
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
             investment_data: List[tuple] = task.task.data
             self._store.update(investment_data, 'investments')
 
-    def on_task_failed(self, task: 'ScheduledTask', exception: Exception) -> None:
+    def on_task_failed(self, task: ScheduledTask, exception: Exception) -> None:
         # Prompt bridge to show stale data warning if the task fails
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
             logger.info("unable to fetch investment summary, current store state unchanged")

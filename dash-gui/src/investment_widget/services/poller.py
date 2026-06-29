@@ -25,7 +25,7 @@ class _FetchWorker(QThread):
     def run(self) -> None:
         logger.debug("Fetch worker started")
         try:
-            summary = AccountSummary.from_json(self._client.fetch())
+            summary = AccountSummary.from_dict(self._client.fetch())
             logger.debug("Fetch worker succeeded")
             self.succeeded.emit(summary)
         except Exception as exc:  # noqa: BLE001 - surfaced to the UI as text
