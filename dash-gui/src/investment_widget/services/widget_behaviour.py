@@ -6,16 +6,6 @@ timer keeps the widget sitting on the desktop beneath everything else.
 """
 from __future__ import annotations
 import sys
-import ctypes
-import objc
-from Quartz import CGWindowLevelForKey, kCGNormalWindowLevelKey
-
-from AppKit import NSApp
-from AppKit import (
-    NSWindowCollectionBehaviorCanJoinAllSpaces,
-    NSWindowCollectionBehaviorStationary,
-    NSWindowCollectionBehaviorIgnoresCycle
-)
 
 from PyQt6.QtCore import QObject, QTimer
 from PyQt6.QtGui import QWindow
@@ -35,6 +25,8 @@ class WidgetBehaviour(QObject):
             self._pin = self._pin_win
         elif sys.platform == "darwin":
             # Get NSWindow from Qt window ID
+            import objc
+
             ns_view = objc.objc_object(c_void_p=int(self._window.winId()))
             self._pin = self._pin_mac
             self._ns_window = ns_view.window()
@@ -48,6 +40,8 @@ class WidgetBehaviour(QObject):
 
     def _pin_win(self) -> None:
         """Pin the window to the bottom of the Z-order on Windows."""
+        import ctypes
+
         hwnd = int(self._window.winId())
         ctypes.windll.user32.SetWindowPos(
             hwnd, _HWND_BOTTOM, 0, 0, 0, 0, _SWP_FLAGS
@@ -55,6 +49,8 @@ class WidgetBehaviour(QObject):
 
     def _pin_mac(self):
         # Set window level to just above desktop (effectively always behind)
+        from Quartz import CGWindowLevelForKey, kCGNormalWindowLevelKey
+
         norm_window_level = CGWindowLevelForKey(
             kCGNormalWindowLevelKey
         )
@@ -62,6 +58,12 @@ class WidgetBehaviour(QObject):
 
     def _configure_mac_window_behavior(self):
         # Set window behavior to stay on desktop and not hide on app deactivation
+        from AppKit import NSApp
+        from AppKit import (
+            NSWindowCollectionBehaviorCanJoinAllSpaces,
+            NSWindowCollectionBehaviorStationary,
+            NSWindowCollectionBehaviorIgnoresCycle
+        )
         NSApp().setActivationPolicy_(1)
 
         self._ns_window.setHidesOnDeactivate_(False)

@@ -8,6 +8,10 @@ from pathlib import Path
 
 import psutil
 
+
+_SERVER_PORT = 8080
+
+
 _ALLOWED_DIRS = {
     Path(__file__).parent.parent.resolve(),         # dash-services/
     Path(__file__).parent.parent.parent.resolve(),  # repo root
@@ -21,7 +25,7 @@ def _is_dashboard_process(pid: str) -> bool:
         return False
 
 
-def stop(port: int = 8080):
+def stop(port: int = _SERVER_PORT):
     if sys.platform == "win32":
         result = subprocess.run(
             f"netstat -ano | findstr :{port} | findstr LISTENING",

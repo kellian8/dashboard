@@ -32,7 +32,7 @@ python-dotenv = ">=1.2.2,<2.0.0"
 [tool.poetry.group.gui.dependencies]
 pyqt6 = ">=6.11.0,<7.0.0"
 requests = ">=2.32.0,<3.0.0"
-pyobjc-framework-Quartz = "*"
+pyobjc-framework-Quartz = { version = "*", markers = "sys_platform == 'darwin'" }
 
 # ── dash-services ─────────────────────────────────────────────────────────────
 [tool.poetry.group.services.dependencies]
