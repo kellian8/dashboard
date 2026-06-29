@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 import sys
-import cherrypy
 
 from loguru import logger
 from PyQt6.QtCore import QUrl
@@ -22,7 +21,7 @@ from .data import AccountSummary, SnapshotStore
 from .paths import MAIN_QML
 from .ingest import IngestServerThread
 from .presentation import build_view_model
-from .services import ApiClient, WidgetBehaviour, Poller
+from .services import WidgetBehaviour
 
 
 class Application:
@@ -33,10 +32,10 @@ class Application:
         self._config = Config.load()
         self._store = SnapshotStore()
         self._bridge = SummaryBridge()
-        self._poller = Poller(
-            ApiClient(self._config.endpoint_url),
-            self._config.poll_interval_seconds,
-        )
+        # self._poller = Poller(
+        #     ApiClient(self._config.endpoint_url),
+        #     self._config.poll_interval_seconds,
+        # )
 
         logger.debug("Loading QML: {}", MAIN_QML)
         self._engine = QQmlApplicationEngine()
@@ -51,8 +50,8 @@ class Application:
         self._position_window()
         self._widget_behaviour_manager = WidgetBehaviour(self._window)
 
-        self._poller.summaryReady.connect(self._on_summary)
-        self._poller.fetchFailed.connect(self._on_error)
+        # self._poller.summaryReady.connect(self._on_summary)
+        # self._poller.fetchFailed.connect(self._on_error)
         logger.info("Application initialised")
 
     def _position_window(self) -> None:

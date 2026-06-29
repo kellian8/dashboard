@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from loguru import logger
 
 from ..paths import DB_PATH
+from ..constants import SNAPSHOT_RETENTION_HOURS
 
 
 class SnapshotStore:
@@ -37,8 +38,19 @@ class SnapshotStore:
                 "INSERT INTO snapshots (ts, total_value) VALUES (?, ?)",
                 (ts.isoformat(), total_value),
             )
-            cutoff = (ts - timedelta(days=7)).isoformat()
-            conn.execute("DELETE FROM snapshots WHERE ts < ?", (cutoff,))
+            self.remove_old_snapshots(conn, ts)
+    
+    def remove_old_snapshots(self,
+        conn: sqlite3.Connection | None = None,
+        ts: datetime | None = None,
+    ) -> None:
+        """Remove snapshots older than the specified number of hours."""
+        ts = ts or datetime.now(tz=timezone.utc)
+        cutoff = (ts - timedelta(hours=SNAPSHOT_RETENTION_HOURS)).isoformat()
+        if conn is None:
+            conn = self._connect()
+        conn.execute("DELETE FROM snapshots WHERE ts < ?", (cutoff,))
+        logger.debug("Removed snapshots older than {} hours", SNAPSHOT_RETENTION_HOURS)
 
     def value_near_24h_ago(self) -> float | None:
         """Total value of the snapshot closest to 24h ago, or None if empty."""
