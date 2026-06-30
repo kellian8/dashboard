@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
-from os import environ, path
+from os import path, getenv
+import os
 from types import SimpleNamespace
 from typing import Any, Dict, Optional
 
@@ -54,7 +55,7 @@ TaskConfigs = {
         schedules=[
             #            _FrozenNamespace(type="recurring_time", time=time(hour=23, minute=24, second=50)),
             # _FrozenNamespace(type="recurring_time", time=time(hour=8, minute=10, second=40)),
-            _TaskConfigSchedule(type="interval", interval=timedelta(seconds=40)),
+            _TaskConfigSchedule(type="interval", interval=timedelta(seconds=30)),
             # _FrozenNamespace(type="one_time", execution_time=datetime(2026, 6, 1, 22, 0)),
         ],
         callback="update_gui_summary",
@@ -69,12 +70,18 @@ TaskConfigs = {
 
 ROOT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
 
-T212_BASE_URL = environ.get('TRADING212_BASE_URL')
+T212_BASE_URL = getenv('TRADING212_BASE_URL')
 
-GUI_HOST = environ.get('GUI_HOST')
-GUI_PORT = environ.get('GUI_PORT')
+# GUI configuration
+GUI_HOST = getenv('GUI_HOST')
+GUI_PORT = getenv('GUI_PORT')
 
-SERVER_HOST = environ.get('SERVER_HOST')
-SERVICES_PORT = int(environ.get('SERVICES_PORT'))
+# Server configuration
+SERVER_HOST = getenv('SERVER_HOST')
+SERVICES_DEFAULT_PORT = 8000
+SERVICES_PORT = int(getenv('SERVICES_PORT', SERVICES_DEFAULT_PORT))
+
+# in seconds. Delay before executing a callback task after the main task completes.
+CALLBACK_DELAY = 15
 
 ENDPOINTS = Endpoints()

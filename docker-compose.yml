@@ -1,0 +1,30 @@
+services:
+  dash_provider:
+    build: .
+    ports:
+      - "${SERVICES_PORT}:${SERVICES_PORT}"
+    environment:
+      # GUI configuration
+      - GUI_PORT=${GUI_PORT}
+      - GUI_HOST=http://host.docker.internal
+
+      # Server configuration
+      - SERVICES_PORT=${SERVICES_PORT}
+
+      # investment account vars
+      - TRADING212_AUTH_KEY=${TRADING212_AUTH_KEY}
+      - TRADING212_KEY_ID=${TRADING212_KEY_ID}
+      - TRADING212_BASE_URL=${TRADING212_BASE_URL}
+
+      - JSON_STORE_PATH=${JSON_STORE_PATH}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    develop:
+      watch:
+        - action: sync+restart
+          path: .
+          target: /app
+        - action: rebuild
+          path: pyproject.toml
+

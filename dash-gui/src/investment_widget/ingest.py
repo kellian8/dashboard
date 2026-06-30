@@ -40,7 +40,7 @@ class IngestServerThread(QThread):
             self._server,
             "/ingest",
             {
-                'global': {'server.socket_host': os.getenv("SERVER_HOST"), 'server.socket_port': int(os.getenv("GUI_PORT")), 'server.socket_timeout': 3},
+                'global': {'server.socket_host': '0.0.0.0', 'server.socket_port': int(os.getenv("GUI_PORT")), 'server.socket_timeout': 3},
                 "/": {},
             },
         )

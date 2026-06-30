@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from loguru import logger
+from ..config import CALLBACK_DELAY
 
 from ..scheduling.observer import TaskExecutionObserver
 from ..scheduling.scheduledTask import ScheduledTask
@@ -154,7 +155,7 @@ class TaskSchedulerService:
             # Schedule the callback task to run immediately after the main task completes
             self.schedule(
                 task=scheduled_task.callback_task,
-                strategy=OneTimeSchedulingStrategy(execution_time=(datetime.now() + timedelta(seconds=30))),
+                strategy=OneTimeSchedulingStrategy(execution_time=(datetime.now() + timedelta(seconds=CALLBACK_DELAY))),
             )
 
         # Whether the task succeeded or failed, check if it should run again.

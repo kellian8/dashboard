@@ -3,7 +3,6 @@
 import signal
 import sys
 import threading
-import tomllib
 from pathlib import Path
 
 # Make shared project-root packages (e.g. utils) importable.
@@ -13,11 +12,11 @@ from datetime import time
 from os import environ, mkdir, path
 
 import cherrypy
-from dotenv import load_dotenv
 from loguru import logger
 
-logger.info("Loading environment variables for application process")
-load_dotenv()
+if path.exists(Path(__file__).resolve().parent / ".env"):
+    from dotenv import load_dotenv
+    load_dotenv()
 
 from dash.config import ROOT_DIR, TaskConfigs
 from dash.scheduling import (

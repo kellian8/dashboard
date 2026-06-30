@@ -1,5 +1,0 @@
-[tool.poetry.scripts]
-stop = "scripts.stop:stop"
-
-[tool.logging]
-config-file = "logging.yml"
