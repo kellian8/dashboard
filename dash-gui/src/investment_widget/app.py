@@ -21,7 +21,7 @@ from .data import AccountSummary, SnapshotStore
 from .paths import MAIN_QML
 from .ingest import IngestServerThread
 from .presentation import build_view_model
-from .services import WidgetBehaviour
+from .services import WidgetBehaviour, FetchSummaryWorker, ApiClient
 
 
 class Application:
@@ -49,9 +49,6 @@ class Application:
         self._window = self._engine.rootObjects()[0]
         self._position_window()
         self._widget_behaviour_manager = WidgetBehaviour(self._window)
-
-        # self._poller.summaryReady.connect(self._on_summary)
-        # self._poller.fetchFailed.connect(self._on_error)
         logger.info("Application initialised")
 
     def _position_window(self) -> None:
@@ -65,18 +62,25 @@ class Application:
             "Summary received | ts={}",
             summary.timestamp.isoformat(),
         )
-        self._store.insert(summary.timestamp, summary.total_value)
         baseline = self._store.value_near_24h_ago()
+        self._store.insert(summary.timestamp, summary.total_value)
         self._bridge.set_model(build_view_model(summary, baseline))
 
     def _on_error(self, message: str) -> None:
         logger.error("Fetch failed: {}", message)
         self._bridge.show_error(message)
 
+    def _fetch_summary(self) -> None:
+        worker = FetchSummaryWorker(ApiClient(self._config.endpoint_url))
+        worker.succeeded.connect(self._on_summary)
+        worker.failed.connect(self._on_error)
+        worker.finished.connect(worker.deleteLater)
+        worker.start()
+
     def run(self) -> int:
         logger.info("Starting poller and entering Qt event loop")
-        # self._poller.start()
         # Start the ingest server in a separate thread to handle incoming summary updates
+        self._fetch_summary()  # Fetch immediately on launch
         self._ingest_server = IngestServerThread()
         self._ingest_server.summaryReady.connect(self._on_summary)
         self._ingest_server.finished.connect(self._ingest_server.deleteLater)
