@@ -14,8 +14,12 @@ class Endpoints(BaseModel):
     push_summary: str = "/ingest/summary"
 
 
-class _FrozenNamespace(SimpleNamespace):
-    """Read-only SimpleNamespace. Raises AttributeError on mutation."""
+class _(SimpleNamespace):
+    """
+    Read-only SimpleNamespace. Prevents accidental mutation of config values.
+    Also allows for dot notation access to config values.
+    Raises AttributeError on mutation.
+    """
 
     def __setattr__(self, name, value):
         raise AttributeError("Config namespace is read-only")
@@ -26,18 +30,41 @@ class _FrozenNamespace(SimpleNamespace):
 
 # TASK CONFIGURATIONS
 TaskConfigs = {
-    "FETCH_SUMMARY": _FrozenNamespace(
+    "FETCH_SUMMARY": _(
         name="fetch_investment_summary",
         schedules=[
-            _FrozenNamespace(type="recurring_time", time=time(hour=7, minute=30, second=0)),
-            _FrozenNamespace(type="recurring_time", time=time(hour=8, minute=30, second=0)),
-            _FrozenNamespace(type="recurring_time", time=time(hour=4, minute=30, second=0)),
-            _FrozenNamespace(type="recurring_time", time=time(hour=14, minute=0, second=0)),
-            _FrozenNamespace(type="recurring_time", time=time(hour=21, minute=30, second=0)),
+            # ____________________ Fetch summary on application start ___________________
+            _(
+                type="one_time",
+                execution_time=datetime.now(datetime.utc) + timedelta(seconds=5)
+            ),
+
+            # ___________________________ Recurring schedules ___________________________
+
+            _( # Just before LDN market open
+                type="recurring_time",
+                time=time(hour=7, minute=30, second=0)
+            ),
+            _( # Just after LDN market open
+                type="recurring_time",
+                time=time(hour=8, minute=30, second=0)
+            ),
+            _( # LDN market close
+                type="recurring_time",
+                time=time(hour=16, minute=30, second=0)
+            ),
+            _( # NY market open
+                type="recurring_time",
+                time=time(hour=14, minute=0, second=0)
+            ),
+            _( # NY market close
+                type="recurring_time",
+                time=time(hour=21, minute=30, second=0)
+            ),
         ],
         callback="update_gui_summary",
     ),
-    "UPDATE_GUI_SUMMARY": _FrozenNamespace(
+    "UPDATE_GUI_SUMMARY": _(
         name="update_gui_summary",
         schedules=[],
         callback=None,
