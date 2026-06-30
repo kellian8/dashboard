@@ -11,7 +11,7 @@ from __future__ import annotations
 import sys
 
 from loguru import logger
-from PyQt6.QtCore import QUrl
+from PyQt6.QtCore import QUrl, QObject
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtQml import QQmlApplicationEngine
 
@@ -32,10 +32,6 @@ class Application:
         self._config = Config.load()
         self._store = SnapshotStore()
         self._bridge = SummaryBridge()
-        # self._poller = Poller(
-        #     ApiClient(self._config.endpoint_url),
-        #     self._config.poll_interval_seconds,
-        # )
 
         logger.debug("Loading QML: {}", MAIN_QML)
         self._engine = QQmlApplicationEngine()
@@ -67,24 +63,24 @@ class Application:
         self._bridge.set_model(build_view_model(summary, baseline))
 
     def _on_error(self, message: str) -> None:
-        logger.error("Fetch failed: {}", message)
+        logger.error("Event failed: {}", message)
         self._bridge.show_error(message)
 
-    def _fetch_summary(self) -> None:
-        worker = FetchSummaryWorker(ApiClient(self._config.endpoint_url))
-        worker.succeeded.connect(self._on_summary)
-        worker.failed.connect(self._on_error)
-        worker.finished.connect(worker.deleteLater)
-        worker.start()
-
     def run(self) -> int:
-        logger.info("Starting poller and entering Qt event loop")
+        logger.info("Entering Qt event loop")
+        
+        # Fetch immediately on launch
+        self._fetch_summary_worker = FetchSummaryWorker(ApiClient(self._config.endpoint_url))
+        self._fetch_summary_worker.succeeded.connect(self._on_summary)
+        self._fetch_summary_worker.failed.connect(self._on_error)
+        self._fetch_summary_worker.finished.connect(self._fetch_summary_worker.deleteLater)
+        
         # Start the ingest server in a separate thread to handle incoming summary updates
-        self._fetch_summary()  # Fetch immediately on launch
         self._ingest_server = IngestServerThread()
         self._ingest_server.summaryReady.connect(self._on_summary)
-        self._ingest_server.finished.connect(self._ingest_server.deleteLater)
+
         self._ingest_server.start()
+        self._fetch_summary_worker.start()
         
         exit_code = self._qt_app.exec()
         logger.info("Qt event loop exited with code {}", exit_code)

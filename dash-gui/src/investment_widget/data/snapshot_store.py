@@ -32,7 +32,7 @@ class SnapshotStore:
             )
 
     def insert(self, ts: datetime, total_value: float) -> None:
-        logger.debug("Inserting snapshot | ts={} value={:.2f}", ts.isoformat(), total_value)
+        logger.debug("Inserting snapshot | ts={}", ts.isoformat())
         with self._connect() as conn:
             conn.execute(
                 "INSERT INTO snapshots (ts, total_value) VALUES (?, ?)",

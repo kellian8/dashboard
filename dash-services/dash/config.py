@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 from os import path, getenv
 import os
 from types import SimpleNamespace
@@ -36,7 +36,7 @@ TaskConfigs = {
             # ____________________ Fetch summary on application start ___________________
             _(
                 type="one_time",
-                execution_time=datetime.now(datetime.utc) + timedelta(seconds=5)
+                execution_time=datetime.now() + timedelta(seconds=5)
             ),
 
             # ___________________________ Recurring schedules ___________________________

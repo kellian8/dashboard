@@ -1,5 +1,6 @@
 import os
 import cherrypy
+import threading
 
 from .data.models import AccountSummary
 
@@ -30,12 +31,13 @@ class IngestServerThread(QThread):
 
     def __init__(self, ) -> None:
         super().__init__()
+        self.setObjectName("ingest_server_thread")
         self._server = IngestServer()
+        self._server.summaryRequestSucceeded.connect(self.summaryReady)
 
     def run(self) -> None:
-        """Run the ingest script."""
-        logger.debug("Server started")
-        self._server.summaryRequestSucceeded.connect(self.summaryReady)
+        """Run the ingest server for income summary push updates"""
+        threading.current_thread().name = QThread.currentThread().objectName()
         cherrypy.quickstart(
             self._server,
             "/ingest",
@@ -44,3 +46,4 @@ class IngestServerThread(QThread):
                 "/": {},
             },
         )
+        logger.info(f"Ingest server thread started")

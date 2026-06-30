@@ -6,8 +6,10 @@ signals carrying a domain ``AccountSummary`` (or an error string).
 """
 from __future__ import annotations
 
+import threading
+
 from loguru import logger
-from PyQt6.QtCore import QObject, QThread, QTimer, pyqtSignal
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 from ..data import AccountSummary
 from .api_client import ApiClient
@@ -21,8 +23,10 @@ class FetchSummaryWorker(QThread):
     def __init__(self, client: ApiClient, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self._client = client
+        self.setObjectName("Fetch_summary_worker")
 
     def run(self) -> None:
+        threading.current_thread().name = QThread.currentThread().objectName()
         logger.debug("Fetch worker started")
         try:
             summary = AccountSummary.from_dict(self._client.fetch())
