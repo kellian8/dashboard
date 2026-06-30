@@ -32,16 +32,14 @@ class DashboardDataServer(object):
             )
 
 
-
-
-
-# Subscribes single scheduler/task executor application to cherrypy engine lifecyle.
-# Chosen methods are exposed at the base url on port 8080 (default).
-# TODO: secure application endpoints with shared app credentials (can be managed through
-# env vars). See auth_digest tool authentication
 def run_server():
-    # explicit socket timeout definition to skirt windows specific TIME_WAIT on wanted
-    # port after server exits before daemon thread exits.
+    """
+    Subscribes single scheduler/task executor application to cherrypy engine lifecyle.
+    Chosen methods are exposed at the base url on port 8080 (default).
+
+    TODO: secure application endpoints with shared app credentials (can be managed through
+    env vars). See auth_digest tool authentication
+    """
     cherrypy.server.socket_host = SERVER_HOST
     cherrypy.server.socket_port = SERVICES_PORT
     if cherrypy.server.socket_port == SERVICES_DEFAULT_PORT:
@@ -63,4 +61,5 @@ def run_server():
         {
             'global': {'server.socket_host': '0.0.0.0', 'server.socket_port': SERVICES_PORT, 'server.socket_timeout': 3},
         },
+
     )
