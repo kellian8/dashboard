@@ -73,5 +73,8 @@ class ScheduledTask(BaseModel):
         # Tiebreaker: lower sequence number first (FIFO for same-time tasks)
         return self.sequence_number < other.sequence_number
 
+    def __gt__(self, other: 'ScheduledTask') -> bool:
+        return not self.__lt__(other) and self != other
+
     def __repr__(self) -> str:
         return f"ScheduledTask[{self.task.get_name()}, next={self._next_execution_time}, status={self._status}]"

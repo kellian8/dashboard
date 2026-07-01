@@ -4,6 +4,9 @@ services:
     ports:
       - "${SERVICES_PORT}:${SERVICES_PORT}"
     environment:
+      # Set the timezone for the container
+      - TZ=Europe/London
+
       # GUI configuration
       - GUI_PORT=${GUI_PORT}
       - GUI_HOST=http://host.docker.internal
