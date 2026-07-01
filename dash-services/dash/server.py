@@ -1,12 +1,10 @@
 """create a cherrypy server and run in a new thread to serve the the store.json data."""
 
-from os import environ, path
-
 import cherrypy
 from loguru import logger
 
-from .config import ROOT_DIR, SERVICES_DEFAULT_PORT, SERVICES_PORT, SERVER_HOST
 from .services import JsonPersistenceClient
+from .constants import SERVICES_DEFAULT_PORT, SERVICES_PORT, SERVER_HOST
 
 
 class DashboardDataServer(object):
@@ -32,7 +30,7 @@ class DashboardDataServer(object):
             )
 
 
-def run_server():
+def run_server(store_client: JsonPersistenceClient):
     """
     Subscribes single scheduler/task executor application to cherrypy engine lifecyle.
     Chosen methods are exposed at the base url on port 8080 (default).
@@ -52,9 +50,8 @@ def run_server():
 
     # Configure and start cherrypy engine
     dashboard_data_server = DashboardDataServer()
-    dashboard_data_server._set_data_client(
-        JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
-    )
+    dashboard_data_server._set_data_client(store_client)
+
     cherrypy.quickstart(
         dashboard_data_server,
         "/api/v1/",

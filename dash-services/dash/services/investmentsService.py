@@ -1,17 +1,17 @@
 from os import environ
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional
 
 import requests
 from loguru import logger
 from requests.exceptions import RequestException
 
-from ..config import T212_BASE_URL, ENDPOINTS, GUI_HOST, GUI_PORT
+from ..config import URLs
 
 
 class InvestmentsService:
     def get_summary(self) -> Optional[Dict]:
         # Build the full endpoint URL for the account summary
-        url = f"{T212_BASE_URL}{ENDPOINTS.summary}"
+        url = f"{URLs['T212'].base_url}{URLs['T212'].endpoints.summary}"
         _username = environ.get('TRADING212_KEY_ID')
         _password = environ.get('TRADING212_AUTH_KEY')
 
@@ -21,7 +21,6 @@ class InvestmentsService:
                 "investment API credentials are required. Please check they are loaded from environment correctly"
             )
 
-        logger.debug("Credential check - usr/= {} pswd/= {}", _username, _password)
         try:
             logger.info(f"Fetching account summary from {url}")
             res = requests.get(
@@ -45,7 +44,7 @@ class InvestmentsService:
         return None
 
     def push_summary_to_gui(self, summary_data: Dict) -> bool:
-        url = f"{GUI_HOST}:{GUI_PORT}{ENDPOINTS.push_summary}"
+        url = f"{URLs['DASH_GUI'].base_url}{URLs['DASH_GUI'].endpoints.push_summary}"
         try:
             logger.info(f"POST {url}")
             res = requests.post(

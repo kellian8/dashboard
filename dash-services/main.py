@@ -9,16 +9,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from datetime import time
-from os import environ, mkdir, path
+from os import mkdir, getenv
 
 import cherrypy
 from loguru import logger
 
-if path.exists(Path(__file__).resolve().parent / ".env"):
+if Path(__file__).resolve().parent.parent.joinpath(".env").exists():
     from dotenv import load_dotenv
     load_dotenv()
 
-from dash.config import ROOT_DIR, TaskConfigs
+from dash.config import TaskConfigs
+from dash.paths import DB_PATH, LOGGING_CONFIG_PATH
 from dash.scheduling import (
     DataObserver,
     FetchSummaryTask,
@@ -47,21 +48,14 @@ _TASK_MAP = {
 
 def main():
     # Load logging configuration from file
-    load_logging_config(Path(__file__).resolve().parent / "pyproject.toml")
-    logger.info("Application logger configured successfully and running")
-    logger.info("Starting application!")
-
-    # Create the 'temp' dir on start up if not found (for example on first run)
-    app_temp_dir = path.normpath(path.join(ROOT_DIR, 'dash/temp'))
-    if not path.isdir(app_temp_dir):
-        logger.info("No temp dir found on start up. Creation 'temp' directory at source root")
-        mkdir(app_temp_dir)
+    load_logging_config(LOGGING_CONFIG_PATH) # app/project.toml or pyproject.toml
+    logger.info("Starting application")
 
     scheduler: TaskSchedulerService = TaskSchedulerService.getInstance()
     scheduler.initialize(worker_count=2)
     investmentsService = InvestmentsService()
 
-    jsonStore = JsonPersistenceClient(store_path=path.normpath(path.join(ROOT_DIR, environ.get('JSON_STORE_PATH'))))
+    jsonStore = JsonPersistenceClient(store_path=DB_PATH)
 
     config = TaskConfigs["FETCH_SUMMARY"]
     if config.schedules:
@@ -94,7 +88,12 @@ def main():
 
     signal.signal(signal.SIGTERM, _handle_sigterm)
 
-    server_thread = threading.Thread(target=run_server, daemon=True, name="main-server-thread")
+    server_thread = threading.Thread(
+        target=run_server,
+        daemon=True, 
+        name="main-server-thread",
+        kwargs={"store_client": jsonStore},
+    )
     server_thread.start()
 
     try:

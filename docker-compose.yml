@@ -9,7 +9,7 @@ services:
 
       # GUI configuration
       - GUI_PORT=${GUI_PORT}
-      - GUI_HOST=http://host.docker.internal
+      - GUI_HOST=host.docker.internal
 
       # Server configuration
       - SERVICES_PORT=${SERVICES_PORT}
@@ -18,8 +18,6 @@ services:
       - TRADING212_AUTH_KEY=${TRADING212_AUTH_KEY}
       - TRADING212_KEY_ID=${TRADING212_KEY_ID}
       - TRADING212_BASE_URL=${TRADING212_BASE_URL}
-
-      - JSON_STORE_PATH=${JSON_STORE_PATH}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

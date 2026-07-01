@@ -17,9 +17,6 @@ name = "dashboard"
 version = "0.1.0"
 package-mode = false
 
-[tool.logging]
-config-file = "logging.yml"
-
 # ── shared by both apps ──────────────────────────────────────────────────────
 [tool.poetry.group.shared.dependencies]
 pyaml = ">=26.2.1,<27.0.0"

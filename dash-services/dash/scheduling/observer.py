@@ -58,8 +58,12 @@ class DataObserver(TaskExecutionObserver):
         # Route to the correct UI update callback based on the task's name
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:
             investment_data: List[tuple] = task.task.data
-            self._store.update(investment_data, 'investments')
-
+            try:
+                self._store.update(investment_data, 'investments')
+                logger.info("Investment data updated successfully in the store")
+            except Exception as e:
+                logger.error("Failed updating store: {}", e)
+                raise
     def on_task_failed(self, task: ScheduledTask, exception: Exception) -> None:
         # Prompt bridge to show stale data warning if the task fails
         if task.task.get_name() == TaskConfigs['FETCH_SUMMARY'].name:

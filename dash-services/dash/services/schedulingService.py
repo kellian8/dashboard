@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from loguru import logger
-from ..config import CALLBACK_DELAY
+from ..constants import CALLBACK_DELAY
 
 from ..scheduling.observer import TaskExecutionObserver
 from ..scheduling.scheduledTask import ScheduledTask

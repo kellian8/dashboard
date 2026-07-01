@@ -19,12 +19,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from investment_widget.app import Application
 from investment_widget.signal_tether import run_signal_tether
+from investment_widget.paths import LOGGING_CONFIG_PATH
 from logging_conf import load_logging_config
 
 
 def main() -> int:
     """Entry point for the dash-gui application."""
-    load_logging_config(Path(__file__).resolve().parent / "pyproject.toml")
+    load_logging_config(LOGGING_CONFIG_PATH)
     logger.info("dash-gui starting up")
     widget = Application()
     _signal_tether = run_signal_tether()

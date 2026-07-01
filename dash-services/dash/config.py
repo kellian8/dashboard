@@ -1,17 +1,7 @@
-from datetime import datetime, time, timedelta, timezone
-from os import path, getenv
-import os
 from types import SimpleNamespace
-from typing import Any, Dict, Optional
+from datetime import datetime, time, timedelta
 
-from pydantic import BaseModel, model_validator
-
-
-class Endpoints(BaseModel):
-    model_config = {"frozen": True}
-
-    summary: str = "/equity/account/summary"
-    push_summary: str = "/ingest/summary"
+from .constants import GUI_HOST, GUI_PORT
 
 
 class _(SimpleNamespace):
@@ -28,18 +18,18 @@ class _(SimpleNamespace):
         raise AttributeError("Config namespace is read-only")
 
 
-# TASK CONFIGURATIONS
+# _____________________ TASK CONFIGURATIONS _____________________
 TaskConfigs = {
     "FETCH_SUMMARY": _(
         name="fetch_investment_summary",
         schedules=[
-            # ____________________ Fetch summary on application start ___________________
+            # Fetch summary on application start _____________
             _(
                 type="one_time",
                 execution_time=datetime.now() + timedelta(seconds=5)
             ),
 
-            # ___________________________ Recurring schedules ___________________________
+            # Recurring schedules ____________________________
 
             _( # Just before LDN market open
                 type="recurring_time",
@@ -71,21 +61,18 @@ TaskConfigs = {
     ),
 }
 
-## __________________________________ CONSTANTS _____________________________________
-
-ROOT_DIR = path.dirname(path.dirname(path.abspath(__file__)))
-T212_BASE_URL = getenv('TRADING212_BASE_URL')
-
-# GUI configuration
-GUI_HOST = getenv('GUI_HOST')
-GUI_PORT = getenv('GUI_PORT')
-
-# Server configuration
-SERVER_HOST = getenv('SERVER_HOST')
-SERVICES_DEFAULT_PORT = 8000
-SERVICES_PORT = int(getenv('SERVICES_PORT', SERVICES_DEFAULT_PORT))
-
-# in seconds. Delay before executing a callback task after the main task completes.
-CALLBACK_DELAY = 15
-
-ENDPOINTS = Endpoints()
+# _______________ URL & ENDPOINT CONFIGURATIONS ________________
+URLs = {
+    "T212": _(
+        base_url="https://live.trading212.com/api/v0",
+        endpoints=_(
+            summary="/equity/account/summary"
+        )
+    ),
+    "DASH_GUI": _(
+        base_url=f"http://{GUI_HOST}:{GUI_PORT}",
+        endpoints=_(
+            push_summary="/ingest/summary"
+        )
+    ),
+}

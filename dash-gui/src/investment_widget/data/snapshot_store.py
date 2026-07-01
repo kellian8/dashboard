@@ -7,7 +7,9 @@ total-value series and derive those by comparing against the row nearest to
 from __future__ import annotations
 
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from ..config import Config
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from loguru import logger
 
@@ -16,9 +18,10 @@ from ..constants import SNAPSHOT_RETENTION_HOURS
 
 
 class SnapshotStore:
-    def __init__(self, db_path=DB_PATH) -> None:
+    def __init__(self, config: Config, db_path=DB_PATH) -> None:
         self._db_path = db_path
         self._ensure_schema()
+        self.timezone = config.timezone
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self._db_path)
@@ -45,7 +48,7 @@ class SnapshotStore:
         ts: datetime | None = None,
     ) -> None:
         """Remove snapshots older than the specified number of hours."""
-        ts = ts or datetime.now(tz=timezone.utc)
+        ts = ts or datetime.now(tz=ZoneInfo(self.timezone))
         cutoff = (ts - timedelta(hours=SNAPSHOT_RETENTION_HOURS)).isoformat()
         if conn is None:
             conn = self._connect()
@@ -54,7 +57,7 @@ class SnapshotStore:
 
     def value_near_24h_ago(self) -> float | None:
         """Total value of the snapshot closest to 24h ago, or None if empty."""
-        target = (datetime.now(tz=timezone.utc) - timedelta(hours=24)).isoformat()
+        target = (datetime.now(tz=ZoneInfo(self.timezone)) - timedelta(hours=24)).isoformat()
         with self._connect() as conn:
             row = conn.execute(
                 "SELECT total_value FROM snapshots "

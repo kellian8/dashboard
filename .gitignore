@@ -9,7 +9,7 @@ __pycache__/
 !poetry.lock
 
 # storage
-dash-services/dash/temp/
+store.json
 *.db
 
 # Environment

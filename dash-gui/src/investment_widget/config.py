@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 import yaml
-from pathlib import Path
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from loguru import logger
 
 from .paths import CONFIG_PATH
@@ -14,6 +13,7 @@ class Config:
     endpoint_url: str
     poll_interval_seconds: int
     position: dict
+    timezone: str
 
     @classmethod
     def load(cls) -> "Config":
@@ -21,6 +21,7 @@ class Config:
         conf = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
         cfg = cls(
             endpoint_url=conf["endpoint_url"],
+            timezone=conf["timezone"],
             poll_interval_seconds=int(conf["poll_interval_seconds"]),
             position=conf["position"],
         )

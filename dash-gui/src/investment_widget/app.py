@@ -30,7 +30,7 @@ class Application:
         self._qt_app = QGuiApplication(sys.argv)
 
         self._config = Config.load()
-        self._store = SnapshotStore()
+        self._store = SnapshotStore(config=self._config)
         self._bridge = SummaryBridge()
 
         logger.debug("Loading QML: {}", MAIN_QML)
