@@ -6,7 +6,7 @@ authors = [
     {name = "cheleaux", email = "nazareth.dnd@gmail.com"}
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["tzdata (>=2026.2,<2027.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
