@@ -17,7 +17,7 @@ SERVICES_PORT = int(getenv('SERVICES_PORT', SERVICES_DEFAULT_PORT))
 CALLBACK_DELAY = 1
 
 # Timeout (s) to wait for the widget to be ready before pushing data
-WIDGET_READY_TIMEOUT: float = 20
+WIDGET_READY_TIMEOUT: float = 40
 
 # News service
 INTEREST_STORY_FETCH_LIMIT = 6

@@ -21,7 +21,7 @@ load_dotenv()
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXE_PATH = REPO_ROOT / "dist" / "DailyBrief" / "DailyBrief.exe"
-LOG_PATH = EXE_PATH.parent / "logs" / "dailybrief.log"
+LOG_PATH = EXE_PATH.parent.parent / "logs" / "dailybrief.log"
 BUILD_SCRIPT = REPO_ROOT / "scripts" / "build-gui-exe.ps1"
 
 READY_TIMEOUT_SECONDS = 30
